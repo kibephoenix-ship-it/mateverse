@@ -5,7 +5,7 @@ MateVerse is a responsive chess web app with a futuristic gaming interface. This
 ## Features
 
 - Legal chess moves, move highlighting, move history, castling, en passant and promotion (powered by chess.js).
-- Drag-and-drop and click-to-move controls, with visible legal targets and last-move highlights; optional online premoves are queued from Settings.
+- Click-to-move and smooth pointer-based drag-and-drop controls, with visible legal targets and last-move highlights; online premoves can be queued, previewed and cancelled.
 - Local position-evaluation bar and move-quality badges, plus backward/forward review controls after a completed game.
 - Separate move, capture, check, castle, game-over and low-clock audio cues, with vibration where supported by the browser.
 - Low-time clock alerts, an in-game server-connection banner, computer-game recovery and online-room resume credentials in LocalStorage, plus one-click rematch requests.
@@ -22,7 +22,7 @@ MateVerse is a responsive chess web app with a futuristic gaming interface. This
 - Computer games remain ready until you press **Start game**; the clock and move input begin only then.
 - Mate Coach suggests and explains a legal move for the current position.
 - Computer-game PGNs and practice win/loss/draw totals are saved to a signed-in player's history without changing online rating.
-- Personal settings include dark/light appearance, board palette, sound, premoves, board orientation, computer strength and English, Spanish, French or Kiswahili interface labels.
+- Personal settings include dark/light appearance, board palette, piece style, sound, premoves, board orientation, computer strength and English, Spanish, French or Kiswahili interface labels.
 - Completed games show a winner banner above the board; online room chat includes delivery errors and recent room messages.
 - Board flip, move sounds, PGN export, FEN copy and responsive layout.
 - `/health` endpoint for basic hosting health checks.
