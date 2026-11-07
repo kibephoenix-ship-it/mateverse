@@ -1,5 +1,43 @@
 import { Chess } from "/vendor/chess.js";
 
+const adsScriptUrl = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1947287610112705";
+const adsSlotId = "mateverse-ads-slot";
+window.adsbygoogle = window.adsbygoogle || [];
+
+function ensureAdSenseSlot(){
+  if (document.getElementById(adsSlotId)) return;
+  const slot = document.createElement("div");
+  slot.id = adsSlotId;
+  slot.className = "adsense-slot";
+  slot.innerHTML = '<ins class="adsbygoogle" style="display:block;width:300px;height:250px;margin:16px auto;" data-ad-client="ca-pub-1947287610112705" data-ad-slot="mateverse-ads-slot" data-ad-format="auto" data-full-width-responsive="true"></ins>';
+  const target = document.querySelector(".hero") || document.querySelector(".shell") || document.body;
+  if (target && target.parentNode) target.parentNode.insertBefore(slot, target.nextSibling || null);
+}
+
+function initializeAds(){
+  ensureAdSenseSlot();
+  try {
+    window.adsbygoogle.push({});
+  } catch (error) {
+    console.error("AdSense error:", error);
+  }
+}
+
+if (!document.querySelector(`script[src="${adsScriptUrl}"]`)) {
+  const adsScript = document.createElement("script");
+  adsScript.src = adsScriptUrl;
+  adsScript.async = true;
+  adsScript.crossOrigin = "anonymous";
+  adsScript.onload = initializeAds;
+  document.head.appendChild(adsScript);
+}
+
+if (document.readyState !== "loading") {
+  initializeAds();
+} else {
+  document.addEventListener("DOMContentLoaded", initializeAds, { once: true });
+}
+
 const $ = id => document.getElementById(id);
 const socket = io({reconnection:true,reconnectionAttempts:Infinity,reconnectionDelay:500,reconnectionDelayMax:5000,timeout:20000});
 const translations = {
