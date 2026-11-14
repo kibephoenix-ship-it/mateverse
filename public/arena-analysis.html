@@ -1,0 +1,2099 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MateVerse — Play, Analyze & Master Chess</title>
+
+  <!-- Google Fonts: Plus Jakarta Sans, Inter, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Font Awesome & Phosphor Icons for crisp chess & UI iconography -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            obsidian: {
+              950: '#090D16',
+              900: '#0F1522',
+              850: '#111827',
+              800: '#1A2234',
+              700: '#263047',
+            },
+            emerald: {
+              400: '#34D399',
+              500: '#10B981',
+              600: '#059669',
+            },
+            gold: {
+              400: '#FBBF24',
+              500: '#F59E0B',
+              600: '#D97706',
+            }
+          },
+          fontFamily: {
+            display: ['"Plus Jakarta Sans"', 'sans-serif'],
+            sans: ['Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          boxShadow: {
+            'emerald-glow': '0 0 28px rgba(16, 185, 129, 0.22)',
+            'gold-glow': '0 0 24px rgba(245, 158, 11, 0.2)',
+            'card-dark': '0 20px 45px -15px rgba(0, 0, 0, 0.65)',
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    :root {
+      --sq-light: #263147;
+      --sq-dark: #151C2B;
+      --sq-light-coord: #94A3B8;
+      --sq-dark-coord: #64748B;
+    }
+
+    /* Board Themes controlled dynamically by Settings */
+    body[data-board-theme="obsidian"] {
+      --sq-light: #263147;
+      --sq-dark: #151C2B;
+      --sq-light-coord: #94A3B8;
+      --sq-dark-coord: #64748B;
+    }
+    body[data-board-theme="tournament"] {
+      --sq-light: #EBECD0;
+      --sq-dark: #739552;
+      --sq-light-coord: #739552;
+      --sq-dark-coord: #EBECD0;
+    }
+    body[data-board-theme="slate"] {
+      --sq-light: #475569;
+      --sq-dark: #1E293B;
+      --sq-light-coord: #CBD5E1;
+      --sq-dark-coord: #94A3B8;
+    }
+    body[data-board-theme="walnut"] {
+      --sq-light: #D4B483;
+      --sq-dark: #7C4D2B;
+      --sq-light-coord: #7C4D2B;
+      --sq-dark-coord: #F3E5AB;
+    }
+
+    body {
+      background-color: #090D16;
+      color: #F8FAFC;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+
+    .bg-grid-pattern {
+      background-image:
+        radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.08) 0%, transparent 55%),
+        linear-gradient(to right, rgba(30, 41, 59, 0.25) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(30, 41, 59, 0.25) 1px, transparent 1px);
+      background-size: 100% 100%, 40px 40px, 40px 40px;
+    }
+
+    .sq-light {
+      background-color: var(--sq-light);
+      transition: background-color 0.25s ease;
+    }
+    .sq-dark {
+      background-color: var(--sq-dark);
+      transition: background-color 0.25s ease;
+    }
+
+    .sq-selected {
+      box-shadow: inset 0 0 0 3px #10B981;
+      background-color: rgba(16, 185, 129, 0.34) !important;
+    }
+    .sq-last-move {
+      background-color: rgba(245, 158, 11, 0.28) !important;
+    }
+    .sq-hint {
+      box-shadow: inset 0 0 0 3px #38BDF8;
+      background-color: rgba(56, 189, 248, 0.28) !important;
+    }
+    .sq-check {
+      background: radial-gradient(circle, rgba(239, 68, 68, 0.85) 0%, rgba(239, 68, 68, 0.25) 70%) !important;
+    }
+
+    /* Piece styling */
+    .chess-piece {
+      user-select: none;
+      transition: transform 0.14s cubic-bezier(0.2, 0.8, 0.2, 1);
+      line-height: 1;
+    }
+    .chess-square:hover .chess-piece {
+      transform: scale(1.07);
+    }
+
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0F1522;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #263047;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #10B981;
+    }
+
+    /* Ad Slot Blueprint Texture */
+    .ad-slot-pattern {
+      background-image: repeating-linear-gradient(
+        -45deg,
+        rgba(30, 41, 59, 0.25),
+        rgba(30, 41, 59, 0.25) 10px,
+        rgba(15, 23, 42, 0.35) 10px,
+        rgba(15, 23, 42, 0.35) 20px
+      );
+    }
+  </style>
+</head>
+
+<body data-board-theme="obsidian" class="bg-obsidian-950 text-slate-100 min-h-screen flex flex-col bg-grid-pattern selection:bg-emerald-500 selection:text-obsidian-950">
+
+  <!-- ==================== GLOBAL TOAST NOTIFICATION ==================== -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-[100] flex flex-col gap-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
+
+  <!-- ==================== TOP NAVIGATION BAR ==================== -->
+  <header class="sticky top-0 z-40 border-b border-slate-800/80 bg-obsidian-950/85 backdrop-blur-xl">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      <!-- Brand Logo -->
+      <a href="#arena" class="flex items-center gap-3 group shrink-0">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center shadow-emerald-glow group-hover:scale-105 transition-transform">
+          <i class="fa-solid fa-chess-knight text-obsidian-950 text-xl"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-display font-extrabold text-xl tracking-tight text-white">Mate<span class="text-emerald-400">Verse</span></span>
+            <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">LIVE v2.4</span>
+          </div>
+          <p class="text-[11px] text-slate-400 hidden md:block">Tactical Arena & Engine Lab</p>
+        </div>
+      </a>
+
+      <!-- Center Nav Links -->
+      <nav class="hidden lg:flex items-center gap-1 bg-obsidian-900/90 p-1 rounded-xl border border-slate-800/80">
+        <a href="#arena" class="px-3.5 py-1.5 rounded-lg text-sm font-medium text-emerald-400 bg-emerald-500/10 transition-colors">
+          <i class="fa-solid fa-chess-board mr-1.5 text-xs"></i>Play Arena
+        </a>
+        <a href="#openings" class="px-3.5 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-obsidian-800 transition-colors">
+          <i class="fa-solid fa-book-open mr-1.5 text-xs"></i>Openings
+        </a>
+        <a href="#leaderboard" class="px-3.5 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-obsidian-800 transition-colors">
+          <i class="fa-solid fa-trophy mr-1.5 text-xs text-gold-400"></i>Leaderboard
+        </a>
+        <button onclick="openSettingsModal()" class="px-3.5 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-obsidian-800 transition-colors">
+          <i class="fa-solid fa-sliders mr-1.5 text-xs"></i>Settings
+        </button>
+        <button onclick="openSupportModal()" class="px-3.5 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-obsidian-800 transition-colors">
+          <i class="fa-solid fa-headset mr-1.5 text-xs"></i>Support
+        </button>
+      </nav>
+
+      <!-- Right Actions: Quick Settings, Auth, Mobile Menu -->
+      <div class="flex items-center gap-2.5">
+        <!-- Ad-Free Pro Badge Toggle -->
+        <button id="nav-pro-btn" onclick="toggleProMembership()" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-gold-500/10 text-gold-400 border border-gold-500/30 hover:bg-gold-500/20 transition-all">
+          <i class="fa-solid fa-crown"></i>
+          <span id="nav-pro-label">Remove Ads</span>
+        </button>
+
+        <!-- Quick Settings Icon Button -->
+        <button onclick="openSettingsModal()" title="Board & Account Settings" class="p-2.5 rounded-xl bg-obsidian-850 hover:bg-obsidian-800 border border-slate-800 text-slate-300 hover:text-emerald-400 transition-colors">
+          <i class="fa-solid fa-gear"></i>
+        </button>
+
+        <!-- Quick Support Icon Button -->
+        <button onclick="openSupportModal()" title="Assistance & Help Desk" class="p-2.5 rounded-xl bg-obsidian-850 hover:bg-obsidian-800 border border-slate-800 text-slate-300 hover:text-emerald-400 transition-colors">
+          <i class="fa-solid fa-life-ring"></i>
+        </button>
+
+        <!-- User Profile / Auth Button -->
+        <button id="auth-trigger-btn" onclick="openAuthModal()" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-obsidian-950 font-semibold text-sm shadow-emerald-glow transition-all">
+          <i class="fa-solid fa-user-astronaut"></i>
+          <span id="auth-btn-text">Sign In</span>
+        </button>
+
+        <!-- Mobile Menu Toggle -->
+        <button onclick="toggleMobileMenu()" class="lg:hidden p-2.5 rounded-xl bg-obsidian-850 border border-slate-800 text-slate-300 hover:text-white">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Navigation Drawer -->
+    <div id="mobile-menu" class="hidden lg:hidden border-t border-slate-800 bg-obsidian-900 px-4 py-3 space-y-1.5">
+      <a href="#arena" onclick="toggleMobileMenu()" class="block px-3 py-2 rounded-lg text-sm font-medium text-emerald-400 bg-emerald-500/10">Play Arena</a>
+      <a href="#openings" onclick="toggleMobileMenu()" class="block px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-obsidian-800">Openings Explorer</a>
+      <a href="#leaderboard" onclick="toggleMobileMenu()" class="block px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-obsidian-800">Global Leaderboard</a>
+      <button onclick="toggleMobileMenu(); openSettingsModal();" class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-obsidian-800">
+        <i class="fa-solid fa-sliders mr-2 text-emerald-400"></i>Settings & Customization
+      </button>
+      <button onclick="toggleMobileMenu(); openSupportModal();" class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-obsidian-800">
+        <i class="fa-solid fa-headset mr-2 text-emerald-400"></i>Support & Contact Desk
+      </button>
+      <a href="#assistance-hub" onclick="toggleMobileMenu()" class="block px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-obsidian-800">Help Center & Tickets</a>
+    </div>
+  </header>
+
+  <!-- ==================== TOP LEADERBOARD AD SLOT (728x90) ==================== -->
+  <div id="ad-slot-top" class="ad-container max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-5">
+    <div class="relative rounded-2xl border border-dashed border-slate-700/80 bg-obsidian-900/80 ad-slot-pattern p-3 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 min-h-[86px]">
+      <div class="flex items-center gap-3">
+        <span class="px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider bg-slate-800 text-slate-400 border border-slate-700">Ad Space • 728×90</span>
+        <div>
+          <p class="text-xs sm:text-sm font-semibold text-slate-200">Sponsored Partner Banner — Leaderboard Slot</p>
+          <p class="text-[11px] text-slate-400">Non-intrusive header placement • Ready for Google AdSense / Direct Chess Sponsors</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <button onclick="openSupportModal('Billing/Ads')" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-obsidian-800 hover:bg-obsidian-700 text-slate-300 border border-slate-700 transition-colors">
+          Advertise Here
+        </button>
+        <button onclick="toggleProMembership()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gold-500/15 hover:bg-gold-500/25 text-gold-400 border border-gold-500/30 transition-colors">
+          <i class="fa-solid fa-ban mr-1"></i>Hide Ads
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MAIN CONTENT ==================== -->
+  <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-14">
+
+    <!-- ==================== HERO & LIVE CHESS ARENA ==================== -->
+    <section id="arena" class="space-y-6">
+      <!-- Top Status & Quick Action Bar -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-obsidian-900/90 border border-slate-800/90 rounded-2xl p-4 sm:px-6 shadow-card-dark">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2.5 flex-wrap">
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              14,820 Players Online
+            </span>
+            <span id="active-opening-badge" class="px-2.5 py-0.5 rounded-full text-xs font-mono bg-obsidian-800 text-slate-300 border border-slate-700">
+              Standard Starting Position
+            </span>
+          </div>
+          <h1 class="font-display font-extrabold text-xl sm:text-2xl text-white tracking-tight">
+            Play Rated Blitz, Train with Stockfish & Master Every Endgame
+          </h1>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <button onclick="openSettingsModal()" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold bg-obsidian-800 hover:bg-obsidian-700 text-slate-200 border border-slate-700 transition-colors">
+            <i class="fa-solid fa-palette text-emerald-400"></i>
+            <span>Board Theme</span>
+          </button>
+          <button onclick="resetGame()" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-500 hover:bg-emerald-400 text-obsidian-950 shadow-emerald-glow transition-all">
+            <i class="fa-solid fa-plus"></i>
+            <span>New Match</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 3-Column Interactive Chess Workspace -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+        <!-- LEFT COLUMN: Matchmaking, Time Controls & Ad Slot (3 cols on lg) -->
+        <div class="lg:col-span-3 space-y-5 order-2 lg:order-1">
+          <!-- Rated Matchmaking Card -->
+          <div class="bg-obsidian-850/95 border border-slate-800 rounded-2xl p-5 shadow-card-dark space-y-4">
+            <div class="flex items-center justify-between">
+              <h2 class="font-display font-bold text-base text-white flex items-center gap-2">
+                <i class="fa-solid fa-bolt text-gold-400"></i> Quick Match
+              </h2>
+              <span class="text-xs font-mono text-emerald-400" id="selected-tc-label">3+2 Blitz</span>
+            </div>
+
+            <!-- Time Control Grid -->
+            <div class="grid grid-cols-2 gap-2" id="tc-selector-grid">
+              <button onclick="selectTimeControl('Bullet 1+0', 60, 0, this)" class="tc-btn p-2.5 rounded-xl border border-slate-700/80 bg-obsidian-900 hover:border-emerald-500/60 text-left transition-all">
+                <div class="text-xs font-bold text-white">1 + 0</div>
+                <div class="text-[11px] text-slate-400">Bullet</div>
+              </button>
+              <button onclick="selectTimeControl('Blitz 3+2', 180, 2, this)" class="tc-btn p-2.5 rounded-xl border-2 border-emerald-500 bg-emerald-500/10 text-left transition-all">
+                <div class="text-xs font-bold text-emerald-400">3 + 2</div>
+                <div class="text-[11px] text-slate-300">Blitz</div>
+              </button>
+              <button onclick="selectTimeControl('Rapid 10+0', 600, 0, this)" class="tc-btn p-2.5 rounded-xl border border-slate-700/80 bg-obsidian-900 hover:border-emerald-500/60 text-left transition-all">
+                <div class="text-xs font-bold text-white">10 + 0</div>
+                <div class="text-[11px] text-slate-400">Rapid</div>
+              </button>
+              <button onclick="selectTimeControl('Classical 30+0', 1800, 0, this)" class="tc-btn p-2.5 rounded-xl border border-slate-700/80 bg-obsidian-900 hover:border-emerald-500/60 text-left transition-all">
+                <div class="text-xs font-bold text-white">30 + 0</div>
+                <div class="text-[11px] text-slate-400">Classical</div>
+              </button>
+            </div>
+
+            <!-- AI Difficulty Selector -->
+            <div class="space-y-1.5">
+              <div class="flex justify-between text-xs">
+                <span class="text-slate-400">Engine Opponent</span>
+                <span id="ai-elo-label" class="font-mono font-semibold text-gold-400">Stockfish Lvl 4 (1650)</span>
+              </div>
+              <input id="ai-level-slider" type="range" min="1" max="8" value="4" oninput="updateAiLevel(this.value)" class="w-full accent-emerald-500 cursor-pointer" />
+            </div>
+
+            <button onclick="startRatedMatchmaking()" id="find-match-btn" class="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-obsidian-950 font-display font-bold text-sm shadow-emerald-glow transition-all flex items-center justify-center gap-2">
+              <i class="fa-solid fa-play"></i>
+              <span>Start Rated Match</span>
+            </button>
+          </div>
+
+          <!-- SIDEBAR AD SLOT (300x250 Medium Rectangle) -->
+          <div id="ad-slot-sidebar" class="ad-container rounded-2xl border border-dashed border-slate-700/90 bg-obsidian-900/90 ad-slot-pattern p-4 flex flex-col justify-between min-h-[240px]">
+            <div class="flex items-center justify-between">
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-slate-800 text-slate-400 border border-slate-700">Ad Space • 300×250</span>
+              <span class="text-[10px] text-slate-500 font-mono">SPONSORED</span>
+            </div>
+
+            <div class="my-auto py-4 text-center space-y-2">
+              <div class="w-11 h-11 rounded-xl bg-gold-500/15 border border-gold-500/30 text-gold-400 flex items-center justify-center mx-auto">
+                <i class="fa-solid fa-chess-queen text-lg"></i>
+              </div>
+              <h3 class="font-display font-bold text-sm text-white">Sidebar Display Ad Zone</h3>
+              <p class="text-xs text-slate-400 leading-relaxed">
+                Prime 300×250 placement for chess courses, tournament sponsors, or AdSense units.
+              </p>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button onclick="openSupportModal('Billing/Ads')" class="flex-1 py-1.5 rounded-lg text-[11px] font-medium bg-obsidian-800 hover:bg-obsidian-700 text-slate-300 border border-slate-700 transition-colors">
+                Book Slot
+              </button>
+              <button onclick="toggleProMembership()" class="flex-1 py-1.5 rounded-lg text-[11px] font-semibold bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30 transition-colors">
+                Go Ad-Free
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- CENTER COLUMN: Interactive 8x8 Chessboard & Eval Bar (6 cols on lg) -->
+        <div class="lg:col-span-6 order-1 lg:order-2 flex flex-col items-center">
+          <div class="w-full max-w-[560px] bg-obsidian-850/95 border border-slate-800 rounded-2xl p-3 sm:p-4 shadow-card-dark space-y-3">
+
+            <!-- Top Player Bar (Black / Opponent) -->
+            <div id="top-player-bar" class="flex items-center justify-between bg-obsidian-900/90 px-3.5 py-2.5 rounded-xl border border-slate-800/80">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-gold-400 font-bold">
+                  <i class="fa-solid fa-robot"></i>
+                </div>
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <span id="opponent-name" class="text-sm font-bold text-white">Stockfish Engine</span>
+                    <span id="opponent-rating" class="text-xs font-mono px-1.5 py-0.5 rounded bg-slate-800 text-gold-400">1650</span>
+                  </div>
+                  <div id="captured-by-black" class="text-xs text-slate-400 h-4 flex items-center gap-0.5"></div>
+                </div>
+              </div>
+              <div id="black-clock" class="font-mono text-lg sm:text-xl font-bold px-3 py-1 rounded-lg bg-obsidian-950 border border-slate-800 text-slate-300">
+                03:00
+              </div>
+            </div>
+
+            <!-- Board + Stockfish Evaluation Bar Wrapper -->
+            <div class="flex items-stretch gap-2.5 sm:gap-3">
+              <!-- Live Stockfish Evaluation Bar -->
+              <div class="w-5 sm:w-6 rounded-xl bg-obsidian-950 border border-slate-800 overflow-hidden flex flex-col justify-between relative select-none" title="Stockfish 16 Live Evaluation">
+                <div id="eval-black-fill" class="bg-slate-800 w-full transition-all duration-500" style="height: 48%;"></div>
+                <div id="eval-white-fill" class="bg-emerald-400 w-full transition-all duration-500" style="height: 52%;"></div>
+                <span id="eval-score-text" class="absolute inset-x-0 top-1.5 text-[9px] font-mono font-bold text-center text-white drop-shadow">+0.3</span>
+              </div>
+
+              <!-- 8x8 Responsive Chessboard -->
+              <div class="flex-1 aspect-square rounded-xl overflow-hidden border-2 border-slate-800 shadow-inner relative">
+                <div id="chessboard" class="w-full h-full grid grid-cols-8 grid-rows-8"></div>
+
+                <!-- Pawn Promotion Modal Overlay inside Board -->
+                <div id="promotion-overlay" class="hidden absolute inset-0 bg-obsidian-950/85 backdrop-blur-sm z-20 flex flex-col items-center justify-center p-4">
+                  <p class="font-display font-bold text-sm text-white mb-3">Promote Pawn To:</p>
+                  <div class="flex items-center gap-3" id="promotion-choices"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bottom Player Bar (White / User) -->
+            <div id="bottom-player-bar" class="flex items-center justify-between bg-obsidian-900/90 px-3.5 py-2.5 rounded-xl border border-slate-800/80">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold">
+                  <i class="fa-solid fa-chess-king"></i>
+                </div>
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <span id="user-display-name" class="text-sm font-bold text-white">You (Grandmaster)</span>
+                    <span id="user-rating-badge" class="text-xs font-mono px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400">1540</span>
+                  </div>
+                  <div id="captured-by-white" class="text-xs text-slate-400 h-4 flex items-center gap-0.5"></div>
+                </div>
+              </div>
+              <div id="white-clock" class="font-mono text-lg sm:text-xl font-bold px-3 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/40 text-emerald-400">
+                03:00
+              </div>
+            </div>
+
+            <!-- Board Action Controls -->
+            <div class="grid grid-cols-4 gap-2 pt-1">
+              <button onclick="flipBoard()" class="py-2 px-2 rounded-xl bg-obsidian-900 hover:bg-obsidian-800 border border-slate-800 text-xs font-medium text-slate-300 hover:text-white flex items-center justify-center gap-1.5 transition-colors">
+                <i class="fa-solid fa-retweet text-emerald-400"></i>
+                <span>Flip</span>
+              </button>
+              <button onclick="showEngineHint()" class="py-2 px-2 rounded-xl bg-obsidian-900 hover:bg-obsidian-800 border border-slate-800 text-xs font-medium text-slate-300 hover:text-white flex items-center justify-center gap-1.5 transition-colors">
+                <i class="fa-solid fa-lightbulb text-gold-400"></i>
+                <span>Hint</span>
+              </button>
+              <button onclick="undoLastMove()" class="py-2 px-2 rounded-xl bg-obsidian-900 hover:bg-obsidian-800 border border-slate-800 text-xs font-medium text-slate-300 hover:text-white flex items-center justify-center gap-1.5 transition-colors">
+                <i class="fa-solid fa-rotate-left text-sky-400"></i>
+                <span>Takeback</span>
+              </button>
+              <button onclick="handleResign()" class="py-2 px-2 rounded-xl bg-obsidian-900 hover:bg-rose-950/50 border border-slate-800 hover:border-rose-500/40 text-xs font-medium text-slate-300 hover:text-rose-400 flex items-center justify-center gap-1.5 transition-colors">
+                <i class="fa-solid fa-flag text-rose-400"></i>
+                <span>Resign</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT COLUMN: Engine Analysis & Algebraic Move History (3 cols on lg) -->
+        <div class="lg:col-span-3 order-3 space-y-5">
+          <div class="bg-obsidian-850/95 border border-slate-800 rounded-2xl p-5 shadow-card-dark flex flex-col h-[475px]">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div>
+                <h2 class="font-display font-bold text-base text-white flex items-center gap-2">
+                  <i class="fa-solid fa-microchip text-emerald-400"></i> Live Analysis
+                </h2>
+                <p id="game-status-text" class="text-xs text-emerald-400 font-medium mt-0.5">White to move</p>
+              </div>
+              <span class="px-2 py-1 rounded-lg bg-obsidian-900 border border-slate-800 font-mono text-[11px] text-slate-400">
+                Depth 22
+              </span>
+            </div>
+
+            <!-- Best Line Preview -->
+            <div class="my-3 p-2.5 rounded-xl bg-obsidian-900 border border-slate-800/90">
+              <div class="text-[10px] font-mono uppercase tracking-wider text-slate-400 mb-1">Engine Principal Variation</div>
+              <div id="pv-line" class="font-mono text-xs text-emerald-400 truncate">1. e4 e5 2. Nf3 Nc6 3. Bb5</div>
+            </div>
+
+            <!-- Algebraic Move Log -->
+            <div class="flex-1 overflow-y-auto pr-1 space-y-1 font-mono text-xs" id="move-history-list">
+              <div class="text-slate-500 text-center py-8 italic">Make your first move on the board to begin recording PGN notation...</div>
+            </div>
+
+            <!-- Export PGN & Quick Support Link -->
+            <div class="pt-3 border-t border-slate-800 flex items-center gap-2">
+              <button onclick="copyPgnToClipboard()" class="flex-1 py-2 px-3 rounded-xl bg-obsidian-900 hover:bg-obsidian-800 border border-slate-700 text-xs font-semibold text-slate-200 transition-colors flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-copy text-emerald-400"></i>
+                <span>Copy PGN</span>
+              </button>
+              <button onclick="openSettingsModal()" class="p-2 rounded-xl bg-obsidian-900 hover:bg-obsidian-800 border border-slate-700 text-slate-300 hover:text-emerald-400 transition-colors" title="Board Preferences">
+                <i class="fa-solid fa-sliders"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== OPENINGS EXPLORER ==================== -->
+    <section id="openings" class="space-y-5">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+        <div>
+          <span class="text-xs font-mono uppercase tracking-wider text-emerald-400">Repertoire Lab</span>
+          <h2 class="font-display font-extrabold text-2xl text-white">Master Openings Explorer</h2>
+        </div>
+        <p class="text-xs sm:text-sm text-slate-400">Load grandmaster lines directly onto the live board and practice against Stockfish.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="openings-grid">
+        <!-- Populated dynamically via JS -->
+      </div>
+    </section>
+
+    <!-- ==================== LIVE GLOBAL LEADERBOARD ==================== -->
+    <section id="leaderboard" class="space-y-5">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <span class="text-xs font-mono uppercase tracking-wider text-gold-400">MateVerse Arena Rankings</span>
+          <h2 class="font-display font-extrabold text-2xl text-white">Live Global Leaderboard</h2>
+        </div>
+
+        <!-- Category Filter Pills -->
+        <div class="inline-flex p-1 rounded-xl bg-obsidian-900 border border-slate-800 self-start">
+          <button onclick="filterLeaderboard('blitz', this)" class="lb-filter-btn px-4 py-1.5 rounded-lg text-xs font-bold bg-emerald-500 text-obsidian-950 transition-all">Blitz</button>
+          <button onclick="filterLeaderboard('bullet', this)" class="lb-filter-btn px-4 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all">Bullet</button>
+          <button onclick="filterLeaderboard('rapid', this)" class="lb-filter-btn px-4 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all">Rapid</button>
+        </div>
+      </div>
+
+      <div class="bg-obsidian-850/95 border border-slate-800 rounded-2xl overflow-hidden shadow-card-dark">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b border-slate-800 bg-obsidian-900/90 text-[11px] font-mono uppercase tracking-wider text-slate-400">
+                <th class="py-3.5 px-5">Rank</th>
+                <th class="py-3.5 px-5">Player</th>
+                <th class="py-3.5 px-5">Rating</th>
+                <th class="py-3.5 px-5">Win Streak</th>
+                <th class="py-3.5 px-5 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboard-tbody" class="divide-y divide-slate-800/70 text-sm">
+              <!-- Populated dynamically via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== DEDICATED ASSISTANCE, SUPPORT & SETTINGS HUB ==================== -->
+    <section id="assistance-hub" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- Direct Assistance Channels (Emails, Phone/WhatsApp, Live Status) -->
+      <div class="lg:col-span-5 bg-obsidian-850/95 border border-slate-800 rounded-2xl p-6 shadow-card-dark space-y-5">
+        <div>
+          <span class="px-2.5 py-0.5 rounded-full text-[11px] font-mono font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">24/7 Player Assistance</span>
+          <h2 class="font-display font-extrabold text-xl sm:text-2xl text-white mt-2">Need Help? Reach Our Desk</h2>
+          <p class="text-xs sm:text-sm text-slate-400 mt-1">
+            Contact MateVerse player support for account recovery, fair-play appeals, bug reports, or advertising partnerships.
+          </p>
+        </div>
+
+        <!-- Direct Contact Cards -->
+        <div class="space-y-3">
+          <!-- Primary Support Email -->
+          <div class="p-3.5 rounded-xl bg-obsidian-900 border border-slate-800 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center shrink-0">
+                <i class="fa-solid fa-envelope"></i>
+              </div>
+              <div class="min-w-0">
+                <div class="text-[11px] text-slate-400">Official Support Email</div>
+                <div class="text-sm font-mono font-semibold text-white truncate">support@mateverse.app</div>
+              </div>
+            </div>
+            <button onclick="copyText('support@mateverse.app', 'Support email copied!')" class="px-3 py-1.5 rounded-lg bg-obsidian-800 hover:bg-emerald-500 hover:text-obsidian-950 text-xs font-semibold text-slate-200 border border-slate-700 transition-colors shrink-0">
+              <i class="fa-regular fa-copy mr-1"></i>Copy
+            </button>
+          </div>
+
+          <!-- Secondary / Escalation Email -->
+          <div class="p-3.5 rounded-xl bg-obsidian-900 border border-slate-800 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-10 h-10 rounded-xl bg-gold-500/15 text-gold-400 flex items-center justify-center shrink-0">
+                <i class="fa-solid fa-shield-halved"></i>
+              </div>
+              <div class="min-w-0">
+                <div class="text-[11px] text-slate-400">Fair Play & Partnerships</div>
+                <div class="text-sm font-mono font-semibold text-white truncate">phoenix@mateverse.app</div>
+              </div>
+            </div>
+            <button onclick="copyText('phoenix@mateverse.app', 'Escalation email copied!')" class="px-3 py-1.5 rounded-lg bg-obsidian-800 hover:bg-gold-500 hover:text-obsidian-950 text-xs font-semibold text-slate-200 border border-slate-700 transition-colors shrink-0">
+              <i class="fa-regular fa-copy mr-1"></i>Copy
+            </button>
+          </div>
+
+          <!-- Support Phone / WhatsApp Line (Clearly Labeled Editable Placeholder) -->
+          <div class="p-3.5 rounded-xl bg-obsidian-900 border border-slate-800 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-10 h-10 rounded-xl bg-sky-500/15 text-sky-400 flex items-center justify-center shrink-0">
+                <i class="fa-brands fa-whatsapp text-lg"></i>
+              </div>
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-[11px] text-slate-400">Phone / WhatsApp Line</span>
+                  <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-slate-800 text-amber-400 border border-slate-700">Editable</span>
+                </div>
+                <div id="support-phone-display" class="text-sm font-mono font-semibold text-white truncate">+254 700 000 000</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <a href="tel:+254700000000" class="p-2 rounded-lg bg-obsidian-800 hover:bg-sky-500 hover:text-obsidian-950 text-slate-200 border border-slate-700 transition-colors" title="Call Support">
+                <i class="fa-solid fa-phone text-xs"></i>
+              </a>
+              <button onclick="copyText(document.getElementById('support-phone-display').textContent, 'Support phone number copied!')" class="px-3 py-1.5 rounded-lg bg-obsidian-800 hover:bg-emerald-500 hover:text-obsidian-950 text-xs font-semibold text-slate-200 border border-slate-700 transition-colors">
+                Copy
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick FAQ Accordion -->
+        <div class="pt-2 space-y-2">
+          <h3 class="text-xs font-mono uppercase tracking-wider text-slate-400">Frequently Asked Questions</h3>
+          <details class="group bg-obsidian-900/90 border border-slate-800 rounded-xl p-3">
+            <summary class="text-xs font-semibold text-slate-200 cursor-pointer flex items-center justify-between list-none">
+              <span>How do I customize board colors and auto-queen promotion?</span>
+              <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 group-open:rotate-180 transition-transform"></i>
+            </summary>
+            <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+              Click the <button onclick="openSettingsModal()" class="text-emerald-400 underline">Settings</button> gear icon in the top navigation bar to switch between Obsidian Emerald, Tournament Wood, Midnight Slate, and Royal Walnut themes, or toggle Auto-Queen promotion.
+            </p>
+          </details>
+          <details class="group bg-obsidian-900/90 border border-slate-800 rounded-xl p-3">
+            <summary class="text-xs font-semibold text-slate-200 cursor-pointer flex items-center justify-between list-none">
+              <span>How are Glicko-2 ratings calculated after a match?</span>
+              <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 group-open:rotate-180 transition-transform"></i>
+            </summary>
+            <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+              Every rated game updates your Elo/Glicko-2 rating immediately based on opponent strength and rating deviation (RD).
+            </p>
+          </details>
+        </div>
+      </div>
+
+      <!-- Live Support Ticket Submission Form -->
+      <div class="lg:col-span-7 bg-obsidian-850/95 border border-slate-800 rounded-2xl p-6 shadow-card-dark flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between gap-2 mb-4">
+            <div>
+              <h3 class="font-display font-bold text-lg text-white">Submit an Assistance Ticket</h3>
+              <p class="text-xs text-slate-400">Average response time: <span class="text-emerald-400 font-mono">&lt; 2 hours</span></p>
+            </div>
+            <button onclick="openSettingsModal()" class="px-3 py-1.5 rounded-xl bg-obsidian-900 hover:bg-obsidian-800 border border-slate-700 text-xs font-semibold text-emerald-400 transition-colors">
+              <i class="fa-solid fa-sliders mr-1.5"></i>Open All Settings
+            </button>
+          </div>
+
+          <form id="inline-support-form" onsubmit="submitSupportTicket(event, 'inline')" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1.5">Your Email Address</label>
+                <input type="email" required placeholder="player@example.com" class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian-900 border border-slate-700 focus:border-emerald-500 focus:outline-none text-sm text-white placeholder-slate-500" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1.5">Assistance Category</label>
+                <select id="inline-ticket-category" class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian-900 border border-slate-700 focus:border-emerald-500 focus:outline-none text-sm text-white">
+                  <option value="Account/Auth">Account & Sign-In Help</option>
+                  <option value="Matchmaking/Bug">Matchmaking & Board Bug</option>
+                  <option value="Fair Play/Report">Fair Play / Cheating Report</option>
+                  <option value="Billing/Ads">Advertising & Pro Membership</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1.5">Describe Your Issue or Inquiry</label>
+              <textarea rows="4" required placeholder="Include your username, game PGN, or details about how we can help..." class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian-900 border border-slate-700 focus:border-emerald-500 focus:outline-none text-sm text-white placeholder-slate-500 resize-none"></textarea>
+            </div>
+
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+              <span class="text-[11px] text-slate-400">
+                <i class="fa-solid fa-lock text-emerald-400 mr-1"></i>Protected by MateVerse Player Support Desk
+              </span>
+              <button type="submit" class="px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-obsidian-950 font-display font-bold text-sm shadow-emerald-glow transition-all">
+                <i class="fa-solid fa-paper-plane mr-1.5"></i>Send Support Ticket
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Ticket Confirmation Banner -->
+        <div id="inline-ticket-confirmation" class="hidden mt-4 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-circle-check text-emerald-400 text-xl"></i>
+            <div>
+              <p class="text-sm font-bold text-white">Ticket Dispatched! ID: <span id="inline-ticket-id" class="font-mono text-emerald-400">#MV-8492</span></p>
+              <p class="text-xs text-slate-300">We have sent a confirmation copy to your email and alerted our support team.</p>
+            </div>
+          </div>
+          <button onclick="document.getElementById('inline-ticket-confirmation').classList.add('hidden')" class="text-xs text-slate-400 hover:text-white">Dismiss</button>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ==================== FOOTER WITH SPONSOR AD SLOT & QUICK CONTACTS ==================== -->
+  <footer class="border-t border-slate-800/90 bg-obsidian-900/95 mt-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+
+      <!-- Footer Sponsor Ad Banner -->
+      <div id="ad-slot-footer" class="ad-container rounded-2xl border border-dashed border-slate-700/80 bg-obsidian-950/80 ad-slot-pattern p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <span class="px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-slate-800 text-slate-400 border border-slate-700">Footer Ad Slot</span>
+          <p class="text-xs sm:text-sm text-slate-300">
+            <strong class="text-white">Partner Showcase:</strong> Reach thousands of daily chess tacticians on MateVerse.
+          </p>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <button onclick="openSupportModal('Billing/Ads')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30 transition-colors">
+            Sponsor MateVerse
+          </button>
+        </div>
+      </div>
+
+      <!-- Footer Links & Direct Contacts -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 text-xs">
+        <div class="space-y-2.5">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center text-obsidian-950">
+              <i class="fa-solid fa-chess-knight"></i>
+            </div>
+            <span class="font-display font-extrabold text-lg text-white">Mate<span class="text-emerald-400">Verse</span></span>
+          </div>
+          <p class="text-slate-400 leading-relaxed">
+            Next-generation tactical chess arena powered by Stockfish evaluation, real-time clocks, and customizable boards.
+          </p>
+        </div>
+
+        <div class="space-y-2">
+          <h4 class="font-display font-bold text-sm text-white">Platform</h4>
+          <ul class="space-y-1.5 text-slate-400">
+            <li><a href="#arena" class="hover:text-emerald-400 transition-colors">Play Live Chess</a></li>
+            <li><a href="#openings" class="hover:text-emerald-400 transition-colors">Openings Explorer</a></li>
+            <li><a href="#leaderboard" class="hover:text-emerald-400 transition-colors">Global Leaderboard</a></li>
+            <li><button onclick="openSettingsModal()" class="hover:text-emerald-400 transition-colors">Board & Gameplay Settings</button></li>
+          </ul>
+        </div>
+
+        <div class="space-y-2">
+          <h4 class="font-display font-bold text-sm text-white">Assistance & Support</h4>
+          <ul class="space-y-1.5 text-slate-400">
+            <li class="flex items-center gap-2">
+              <i class="fa-solid fa-envelope text-emerald-400"></i>
+              <button onclick="copyText('support@mateverse.app', 'Support email copied!')" class="hover:text-white">support@mateverse.app</button>
+            </li>
+            <li class="flex items-center gap-2">
+              <i class="fa-solid fa-shield text-gold-400"></i>
+              <button onclick="copyText('phoenix@mateverse.app', 'Escalation email copied!')" class="hover:text-white">phoenix@mateverse.app</button>
+            </li>
+            <li class="flex items-center gap-2">
+              <i class="fa-solid fa-phone text-sky-400"></i>
+              <a href="tel:+254700000000" class="hover:text-white">+254 700 000 000</a>
+            </li>
+            <li><button onclick="openSupportModal()" class="text-emerald-400 hover:underline font-medium">Open Support Ticket &rarr;</button></li>
+          </ul>
+        </div>
+
+        <div class="space-y-2">
+          <h4 class="font-display font-bold text-sm text-white">Ad & Membership Controls</h4>
+          <p class="text-slate-400">Prefer a distraction-free tournament interface? Toggle Pro mode anytime.</p>
+          <button onclick="toggleProMembership()" class="mt-1 px-4 py-2 rounded-xl bg-obsidian-800 hover:bg-obsidian-700 border border-slate-700 text-gold-400 font-semibold transition-colors">
+            <i class="fa-solid fa-crown mr-1.5"></i>Toggle Ad-Free Pro
+          </button>
+        </div>
+      </div>
+
+      <div class="pt-6 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
+        <p>&copy; 2026 MateVerse Chess Platform. All rights reserved.</p>
+        <p class="font-mono">Engine: Stockfish WASM • Fair Play Protected</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==================== COMPREHENSIVE SETTINGS MODAL ==================== -->
+  <div id="settings-modal" class="hidden fixed inset-0 z-50 bg-obsidian-950/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-obsidian-900 border border-slate-800 rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden my-auto">
+      <!-- Modal Header -->
+      <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-obsidian-850">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center">
+            <i class="fa-solid fa-sliders"></i>
+          </div>
+          <div>
+            <h3 class="font-display font-bold text-lg text-white">MateVerse Settings</h3>
+            <p class="text-xs text-slate-400">Customize board aesthetics, gameplay rules, privacy & ad preferences</p>
+          </div>
+        </div>
+        <button onclick="closeSettingsModal()" class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-obsidian-800">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Settings Tabs -->
+      <div class="flex border-b border-slate-800 bg-obsidian-950/60 px-6 gap-4 overflow-x-auto">
+        <button onclick="switchSettingsTab('board', this)" class="settings-tab-btn py-3 text-xs font-bold border-b-2 border-emerald-500 text-emerald-400 whitespace-nowrap">
+          <i class="fa-solid fa-chess-board mr-1.5"></i>Board & Pieces
+        </button>
+        <button onclick="switchSettingsTab('gameplay', this)" class="settings-tab-btn py-3 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-white whitespace-nowrap">
+          <i class="fa-solid fa-gamepad mr-1.5"></i>Gameplay & Clocks
+        </button>
+        <button onclick="switchSettingsTab('account', this)" class="settings-tab-btn py-3 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-white whitespace-nowrap">
+          <i class="fa-solid fa-user-shield mr-1.5"></i>Account & Privacy
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-6 max-h-[65vh] overflow-y-auto space-y-6">
+
+        <!-- TAB 1: BOARD & PIECES -->
+        <div id="settings-tab-board" class="settings-panel space-y-5">
+          <div>
+            <label class="block text-xs font-mono uppercase tracking-wider text-slate-400 mb-2.5">Board Color Theme (Live Preview)</label>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              <button type="button" onclick="setBoardTheme('obsidian')" data-theme-opt="obsidian" class="theme-card p-3 rounded-xl border-2 border-emerald-500 bg-obsidian-850 text-left transition-all">
+                <div class="flex gap-1 mb-2">
+                  <span class="w-5 h-5 rounded bg-[#263147]"></span>
+                  <span class="w-5 h-5 rounded bg-[#151C2B]"></span>
+                </div>
+                <div class="text-xs font-bold text-white">Obsidian</div>
+                <div class="text-[10px] text-emerald-400">Default Dark</div>
+              </button>
+
+              <button type="button" onclick="setBoardTheme('tournament')" data-theme-opt="tournament" class="theme-card p-3 rounded-xl border border-slate-700 bg-obsidian-850 text-left transition-all">
+                <div class="flex gap-1 mb-2">
+                  <span class="w-5 h-5 rounded bg-[#EBECD0]"></span>
+                  <span class="w-5 h-5 rounded bg-[#739552]"></span>
+                </div>
+                <div class="text-xs font-bold text-white">Tournament</div>
+                <div class="text-[10px] text-slate-400">Classic Green</div>
+              </button>
+
+              <button type="button" onclick="setBoardTheme('slate')" data-theme-opt="slate" class="theme-card p-3 rounded-xl border border-slate-700 bg-obsidian-850 text-left transition-all">
+                <div class="flex gap-1 mb-2">
+                  <span class="w-5 h-5 rounded bg-[#475569]"></span>
+                  <span class="w-5 h-5 rounded bg-[#1E293B]"></span>
+                </div>
+                <div class="text-xs font-bold text-white">Midnight Slate</div>
+                <div class="text-[10px] text-slate-400">Steel Blue</div>
+              </button>
+
+              <button type="button" onclick="setBoardTheme('walnut')" data-theme-opt="walnut" class="theme-card p-3 rounded-xl border border-slate-700 bg-obsidian-850 text-left transition-all">
+                <div class="flex gap-1 mb-2">
+                  <span class="w-5 h-5 rounded bg-[#D4B483]"></span>
+                  <span class="w-5 h-5 rounded bg-[#7C4D2B]"></span>
+                </div>
+                <div class="text-xs font-bold text-white">Royal Walnut</div>
+                <div class="text-[10px] text-slate-400">Warm Wood</div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Piece Style Selector -->
+          <div>
+            <label class="block text-xs font-mono uppercase tracking-wider text-slate-400 mb-2">Piece Set Style</label>
+            <select id="setting-piece-style" onchange="updateSettingsFromUI()" class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian-850 border border-slate-700 text-sm text-white focus:border-emerald-500 focus:outline-none">
+              <option value="neo">Neo Grandmaster (Crisp Vector Unicode)</option>
+              <option value="classic">Classic Staunton Contrast</option>
+              <option value="alpha">Alpha High-Visibility</option>
+            </select>
+          </div>
+
+          <!-- Visual Toggles -->
+          <div class="space-y-3 pt-1">
+            <label class="flex items-center justify-between p-3 rounded-xl bg-obsidian-850 border border-slate-800 cursor-pointer">
+              <div>
+                <div class="text-sm font-semibold text-white">Show Board Coordinates (a-h, 1-8)</div>
+                <div class="text-xs text-slate-400">Display algebraic rank and file labels on edge squares</div>
+              </div>
+              <input id="setting-coords" type="checkbox" checked onchange="updateSettingsFromUI()" class="w-5 h-5 accent-emerald-500 rounded cursor-pointer" />
+            </label>
+
+            <label class="flex items-center justify-between p-3 rounded-xl bg-obsidian-850 border border-slate-800 cursor-pointer">
+              <div>
+                <div class="text-sm font-semibold text-white">Highlight Legal Move Dots</div>
+                <div class="text-xs text-slate-400">Show emerald target indicators when selecting a piece</div>
+              </div>
+              <input id="setting-legal-dots" type="checkbox" checked onchange="updateSettingsFromUI()" class="w-5 h-5 accent-emerald-500 rounded cursor-pointer" />
+            </label>
+
+            <label class="flex items-center justify-between p-3 rounded-xl bg-obsidian-850 border border-slate-800 cursor-pointer">
+              <div>
+                <div class="text-sm font-semibold text-white">Move & Capture Sound Effects</div>
+                <div class="text-xs text-slate-400">Synthesized WebAudio acoustic feedback for moves and checks</div>
+              </div>
+              <input id="setting-sound" type="checkbox" checked onchange="updateSettingsFromUI()" class="w-5 h-5 accent-emerald-500 rounded cursor-pointer" />
+            </label>
+          </div>
+        </div>
+
+        <!-- TAB 2: GAMEPLAY & CLOCKS -->
+        <div id="settings-tab-gameplay" class="settings-panel hidden space-y-4">
+          <label class="flex items-center justify-between p-3.5 rounded-xl bg-obsidian-850 border border-slate-800 cursor-pointer">
+            <div>
+              <div class="text-sm font-semibold text-white">Always Promote Pawns to Queen</div>
+              <div class="text-xs text-slate-400">Skip promotion picker dialog in fast Bullet & Blitz games</div>
+            </div>
+            <input id="setting-auto-queen" type="checkbox" onchange="updateSettingsFromUI()" class="w-5 h-5 accent-emerald-500 rounded cursor-pointer" />
+          </label>
+
+          <label class="flex items-center justify-between p-3.5 rounded-xl bg-obsidian-850 border border-slate-800 cursor-pointer">
+            <div>
+              <div class="text-sm font-semibold text-white">Enable Premoves</div>
+              <div class="text-xs text-slate-400">Queue your next move while opponent's clock is running</div>
+            </div>
+            <input id="setting-premoves" type="checkbox" checked onchange="updateSettingsFromUI()" class="w-5 h-5 accent-emerald-500 rounded cursor-pointer" />
+          </label>
+
+          <label class="flex items-center justify-between p-3.5 rounded-xl bg-obsidian-850 border border-slate-800 cursor-pointer">
+            <div>
+              <div class="text-sm font-semibold text-white">Confirm Before Resigning</div>
+              <div class="text-xs text-slate-400">Require a second click on the Resign button to prevent misclicks</div>
+            </div>
+            <input id="setting-confirm-resign" type="checkbox" checked onchange="updateSettingsFromUI()" class="w-5 h-5 accent-emerald-500 rounded cursor-pointer" />
+          </label>
+
+          <div class="p-3.5 rounded-xl bg-obsidian-850 border border-slate-800 space-y-2">
+            <div class="flex justify-between text-xs">
+              <span class="font-semibold text-white">Matchmaking Rating Range</span>
+              <span id="rating-range-val" class="font-mono text-emerald-400">± 150 Elo</span>
+            </div>
+            <input id="setting-rating-range" type="range" min="50" max="400" step="25" value="150" oninput="document.getElementById('rating-range-val').textContent = '± ' + this.value + ' Elo'" class="w-full accent-emerald-500 cursor-pointer" />
+          </div>
+        </div>
+
+        <!-- TAB 3: ACCOUNT, PRIVACY & ADS -->
+        <div id="settings-tab-account" class="settings-panel hidden space-y-4">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1.5">Arena Display Name</label>
+            <input id="setting-display-name" type="text" value="You (Grandmaster)" class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian-850 border border-slate-700 text-sm text-white focus:border-emerald-500 focus:outline-none" />
+          </div>
+
+          <label class="flex items-center justify-between p-3.5 rounded-xl bg-obsidian-850 border border-slate-800 cursor-pointer">
+            <div>
+              <div class="text-sm font-semibold text-white">Public Rating & Match History</div>
+              <div class="text-xs text-slate-400">Allow other players to inspect your PGN archive and Elo</div>
+            </div>
+            <input id="setting-public-elo" type="checkbox" checked class="w-5 h-5 accent-emerald-500 rounded cursor-pointer" />
+          </label>
+
+          <label class="flex items-center justify-between p-3.5 rounded-xl bg-obsidian-850 border border-slate-800 cursor-pointer">
+            <div>
+              <div class="text-sm font-semibold text-white">Ad-Free Pro Interface</div>
+              <div class="text-xs text-slate-400">Hide leaderboard, sidebar, and footer sponsor slots</div>
+            </div>
+            <input id="setting-hide-ads" type="checkbox" onchange="setAdsVisibility(!this.checked)" class="w-5 h-5 accent-gold-500 rounded cursor-pointer" />
+          </label>
+
+          <div class="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <i class="fa-solid fa-shield-check text-emerald-400 text-lg"></i>
+              <div>
+                <div class="text-xs font-bold text-white">Two-Factor Authentication (2FA)</div>
+                <div class="text-[11px] text-slate-300">Account security active via Authenticator / Google OAuth</div>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500 text-obsidian-950">ENABLED</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="px-6 py-4 border-t border-slate-800 bg-obsidian-850 flex items-center justify-between gap-3">
+        <button onclick="resetSettingsToDefault()" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white bg-obsidian-900 border border-slate-700 transition-colors">
+          Reset Defaults
+        </button>
+        <div class="flex items-center gap-2">
+          <button onclick="closeSettingsModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-obsidian-800 transition-colors">
+            Cancel
+          </button>
+          <button onclick="saveSettingsAndClose()" class="px-5 py-2 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-obsidian-950 shadow-emerald-glow transition-all">
+            Save Preferences
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SUPPORT & ASSISTANCE MODAL ==================== -->
+  <div id="support-modal" class="hidden fixed inset-0 z-50 bg-obsidian-950/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-obsidian-900 border border-slate-800 rounded-2xl max-w-xl w-full shadow-2xl overflow-hidden my-auto">
+      <div class="px-6 py-4 border-b border-slate-800 bg-obsidian-850 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center">
+            <i class="fa-solid fa-headset"></i>
+          </div>
+          <div>
+            <h3 class="font-display font-bold text-lg text-white">Player Assistance & Support</h3>
+            <p class="text-xs text-slate-400">Direct email, phone line & instant support ticket</p>
+          </div>
+        </div>
+        <button onclick="closeSupportModal()" class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-obsidian-800">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-5">
+        <!-- Quick Copy Contact Strip -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <button onclick="copyText('support@mateverse.app', 'Support email copied!')" class="p-3 rounded-xl bg-obsidian-850 hover:border-emerald-500/50 border border-slate-800 text-left transition-all group">
+            <div class="text-[10px] font-mono text-slate-400 flex items-center justify-between">
+              <span>SUPPORT EMAIL</span>
+              <i class="fa-regular fa-copy text-emerald-400"></i>
+            </div>
+            <div class="text-xs font-mono font-bold text-white mt-0.5 truncate">support@mateverse.app</div>
+          </button>
+
+          <button onclick="copyText('+254 700 000 000', 'Phone / WhatsApp copied!')" class="p-3 rounded-xl bg-obsidian-850 hover:border-sky-500/50 border border-slate-800 text-left transition-all">
+            <div class="text-[10px] font-mono text-slate-400 flex items-center justify-between">
+              <span>PHONE / WHATSAPP</span>
+              <i class="fa-regular fa-copy text-sky-400"></i>
+            </div>
+            <div class="text-xs font-mono font-bold text-white mt-0.5">+254 700 000 000</div>
+          </button>
+        </div>
+
+        <form onsubmit="submitSupportTicket(event, 'modal')" class="space-y-3.5">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Your Email</label>
+            <input type="email" required placeholder="you@domain.com" class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian-850 border border-slate-700 text-sm text-white focus:border-emerald-500 focus:outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Topic</label>
+            <select id="modal-ticket-category" class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian-850 border border-slate-700 text-sm text-white focus:border-emerald-500 focus:outline-none">
+              <option value="Account/Auth">Account & Sign-In Assistance</option>
+              <option value="Matchmaking/Bug">Gameplay / Clock Bug Report</option>
+              <option value="Fair Play/Report">Fair Play & Rating Appeal</option>
+              <option value="Billing/Ads">Ad Placement & Pro Subscription</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Message</label>
+            <textarea rows="3" required placeholder="How can our team assist you today?" class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian-850 border border-slate-700 text-sm text-white focus:border-emerald-500 focus:outline-none resize-none"></textarea>
+          </div>
+          <button type="submit" class="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-obsidian-950 font-display font-bold text-sm shadow-emerald-glow transition-all">
+            Submit Ticket to Support Desk
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== GOOGLE OAUTH & EMAIL AUTH MODAL ==================== -->
+  <div id="auth-modal" class="hidden fixed inset-0 z-50 bg-obsidian-950/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-obsidian-900 border border-slate-800 rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-800 bg-obsidian-850 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-chess-knight text-emerald-400 text-lg"></i>
+          <h3 class="font-display font-bold text-base text-white">Join MateVerse Arena</h3>
+        </div>
+        <button onclick="closeAuthModal()" class="p-1.5 rounded-lg text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <button onclick="completeMockSignIn('GrandmasterAlex')" class="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-semibold text-sm flex items-center justify-center gap-2.5 transition-colors">
+          <i class="fa-brands fa-google text-rose-500"></i>
+          <span>Continue with Google</span>
+        </button>
+
+        <div class="relative flex py-1 items-center">
+          <div class="flex-grow border-t border-slate-800"></div>
+          <span class="flex-shrink mx-3 text-[11px] font-mono uppercase text-slate-500">or email</span>
+          <div class="flex-grow border-t border-slate-800"></div>
+        </div>
+
+        <form onsubmit="handleEmailAuth(event)" class="space-y-3">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Username or Email</label>
+            <input id="auth-username-input" type="text" required placeholder="MagnusTactician" class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian-850 border border-slate-700 text-sm text-white focus:border-emerald-500 focus:outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Password</label>
+            <input type="password" required placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian-850 border border-slate-700 text-sm text-white focus:border-emerald-500 focus:outline-none" />
+          </div>
+          <button type="submit" class="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-obsidian-950 font-display font-bold text-sm shadow-emerald-glow transition-all">
+            Sign In & Sync Elo
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== JAVASCRIPT: CHESS ENGINE, SETTINGS, ADS & SUPPORT ==================== -->
+  <script>
+    // -------------------- 1. APPLICATION STATE & USER SETTINGS --------------------
+    const userSettings = {
+      boardTheme: 'obsidian',
+      pieceStyle: 'neo',
+      showCoords: true,
+      showLegalDots: true,
+      soundEnabled: true,
+      autoQueen: false,
+      premoves: true,
+      confirmResign: true,
+      displayName: 'You (Grandmaster)',
+      adsHidden: false
+    };
+
+    const PIECE_UNICODE = {
+      wK: '♔', wQ: '♕', wR: '♖', wB: '♗', wN: '♘', wP: '♙',
+      bK: '♚', bQ: '♛', bR: '♜', bB: '♝', bN: '♞', bP: '♟'
+    };
+
+    const PIECE_VALUES = { P: 100, N: 320, B: 330, R: 500, Q: 900, K: 20000 };
+
+    // Initial 8x8 Board Setup
+    function getInitialBoard() {
+      return [
+        ['bR','bN','bB','bQ','bK','bB','bN','bR'],
+        ['bP','bP','bP','bP','bP','bP','bP','bP'],
+        [null,null,null,null,null,null,null,null],
+        [null,null,null,null,null,null,null,null],
+        [null,null,null,null,null,null,null,null],
+        [null,null,null,null,null,null,null,null],
+        ['wP','wP','wP','wP','wP','wP','wP','wP'],
+        ['wR','wN','wB','wQ','wK','wB','wN','wR']
+      ];
+    }
+
+    let board = getInitialBoard();
+    let turn = 'w';
+    let selectedSq = null;
+    let legalMovesForSelected = [];
+    let lastMove = null;
+    let hintMove = null;
+    let flipped = false;
+    let moveHistory = [];
+    let stateSnapshots = [];
+    let capturedByWhite = [];
+    let capturedByBlack = [];
+    let pendingPromotion = null;
+    let resignConfirmPending = false;
+
+    // Chess Clocks & AI Level
+    let whiteSeconds = 180;
+    let blackSeconds = 180;
+    let clockIncrement = 2;
+    let clockInterval = null;
+    let gameActive = true;
+    let aiLevel = 4;
+
+    // -------------------- 2. WEB AUDIO SOUND SYNTHESIZER --------------------
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playMoveSound(isCapture = false) {
+      if (!userSettings.soundEnabled) return;
+      try {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = isCapture ? 'triangle' : 'sine';
+        osc.frequency.setValueAtTime(isCapture ? 210 : 340, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(isCapture ? 95 : 160, audioCtx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.14, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.09);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.09);
+      } catch (e) {}
+    }
+
+    // -------------------- 3. TOAST & CLIPBOARD HELPERS --------------------
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      const colors = type === 'error'
+        ? 'bg-rose-950/95 border-rose-500/50 text-rose-200'
+        : type === 'info'
+        ? 'bg-obsidian-850/95 border-sky-500/50 text-sky-200'
+        : 'bg-obsidian-850/95 border-emerald-500/50 text-emerald-200';
+      const icon = type === 'error' ? 'fa-circle-exclamation text-rose-400' : 'fa-circle-check text-emerald-400';
+
+      toast.className = `pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl border shadow-xl backdrop-blur-md text-xs font-medium transition-all duration-300 ${colors}`;
+      toast.innerHTML = `<i class="fa-solid ${icon} text-sm"></i><span>${message}</span>`;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(8px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3200);
+    }
+
+    function copyText(text, successMsg = 'Copied to clipboard!') {
+      const tempInput = document.createElement('textarea');
+      tempInput.value = text.trim();
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempInput);
+      showToast(successMsg);
+    }
+
+    // -------------------- 4. CHESS MOVE GENERATION & VALIDATION --------------------
+    function inBounds(r, c) {
+      return r >= 0 && r < 8 && c >= 0 && c < 8;
+    }
+
+    function generatePseudoLegalMoves(b, r, c) {
+      const piece = b[r][c];
+      if (!piece) return [];
+      const color = piece[0];
+      const type = piece[1];
+      const enemy = color === 'w' ? 'b' : 'w';
+      const moves = [];
+
+      if (type === 'P') {
+        const dir = color === 'w' ? -1 : 1;
+        const startRow = color === 'w' ? 6 : 1;
+        if (inBounds(r + dir, c) && !b[r + dir][c]) {
+          moves.push({ r: r + dir, c });
+          if (r === startRow && !b[r + 2 * dir][c]) {
+            moves.push({ r: r + 2 * dir, c });
+          }
+        }
+        for (const dc of [-1, 1]) {
+          if (inBounds(r + dir, c + dc) && b[r + dir][c + dc] && b[r + dir][c + dc][0] === enemy) {
+            moves.push({ r: r + dir, c: c + dc });
+          }
+        }
+      } else if (type === 'N') {
+        const jumps = [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]];
+        for (const [dr, dc] of jumps) {
+          const nr = r + dr, nc = c + dc;
+          if (inBounds(nr, nc) && (!b[nr][nc] || b[nr][nc][0] === enemy)) {
+            moves.push({ r: nr, c: nc });
+          }
+        }
+      } else if (type === 'K') {
+        for (let dr = -1; dr <= 1; dr++) {
+          for (let dc = -1; dc <= 1; dc++) {
+            if (dr === 0 && dc === 0) continue;
+            const nr = r + dr, nc = c + dc;
+            if (inBounds(nr, nc) && (!b[nr][nc] || b[nr][nc][0] === enemy)) {
+              moves.push({ r: nr, c: nc });
+            }
+          }
+        }
+      } else {
+        const dirs = [];
+        if (type === 'R' || type === 'Q') dirs.push([-1,0],[1,0],[0,-1],[0,1]);
+        if (type === 'B' || type === 'Q') dirs.push([-1,-1],[-1,1],[1,-1],[1,1]);
+        for (const [dr, dc] of dirs) {
+          let nr = r + dr, nc = c + dc;
+          while (inBounds(nr, nc)) {
+            if (!b[nr][nc]) {
+              moves.push({ r: nr, c: nc });
+            } else {
+              if (b[nr][nc][0] === enemy) moves.push({ r: nr, c: nc });
+              break;
+            }
+            nr += dr;
+            nc += dc;
+          }
+        }
+      }
+      return moves;
+    }
+
+    function isKingInCheck(b, color) {
+      let kingPos = null;
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          if (b[r][c] === color + 'K') kingPos = { r, c };
+        }
+      }
+      if (!kingPos) return true;
+      const enemy = color === 'w' ? 'b' : 'w';
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          if (b[r][c] && b[r][c][0] === enemy) {
+            const attacks = generatePseudoLegalMoves(b, r, c);
+            if (attacks.some(m => m.r === kingPos.r && m.c === kingPos.c)) return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    function getLegalMoves(b, r, c) {
+      const piece = b[r][c];
+      if (!piece) return [];
+      const color = piece[0];
+      return generatePseudoLegalMoves(b, r, c).filter(m => {
+        const clone = b.map(row => [...row]);
+        clone[m.r][m.c] = clone[r][c];
+        clone[r][c] = null;
+        return !isKingInCheck(clone, color);
+      });
+    }
+
+    function getAllLegalMovesForColor(b, color) {
+      const all = [];
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          if (b[r][c] && b[r][c][0] === color) {
+            const moves = getLegalMoves(b, r, c);
+            moves.forEach(to => all.push({ from: { r, c }, to }));
+          }
+        }
+      }
+      return all;
+    }
+
+    function sqToAlgebraic(r, c) {
+      return String.fromCharCode(97 + c) + (8 - r);
+    }
+
+    // -------------------- 5. BOARD RENDERING --------------------
+    function renderBoard() {
+      const boardEl = document.getElementById('chessboard');
+      boardEl.innerHTML = '';
+
+      const whiteInCheck = isKingInCheck(board, 'w');
+      const blackInCheck = isKingInCheck(board, 'b');
+
+      for (let i = 0; i < 64; i++) {
+        const displayR = Math.floor(i / 8);
+        const displayC = i % 8;
+        const r = flipped ? 7 - displayR : displayR;
+        const c = flipped ? 7 - displayC : displayC;
+
+        const isLight = (r + c) % 2 === 0;
+        const sq = document.createElement('div');
+        sq.className = `chess-square relative flex items-center justify-center cursor-pointer select-none ${isLight ? 'sq-light' : 'sq-dark'}`;
+
+        if (selectedSq && selectedSq.r === r && selectedSq.c === c) {
+          sq.classList.add('sq-selected');
+        }
+        if (lastMove && ((lastMove.from.r === r && lastMove.from.c === c) || (lastMove.to.r === r && lastMove.to.c === c))) {
+          sq.classList.add('sq-last-move');
+        }
+        if (hintMove && ((hintMove.from.r === r && hintMove.from.c === c) || (hintMove.to.r === r && hintMove.to.c === c))) {
+          sq.classList.add('sq-hint');
+        }
+
+        const piece = board[r][c];
+        if ((piece === 'wK' && whiteInCheck) || (piece === 'bK' && blackInCheck)) {
+          sq.classList.add('sq-check');
+        }
+
+        // Coordinate labels (respects userSettings.showCoords)
+        if (userSettings.showCoords) {
+          if (displayC === 0) {
+            const rankSpan = document.createElement('span');
+            rankSpan.className = 'absolute top-0.5 left-1 text-[10px] font-mono font-bold opacity-80 pointer-events-none';
+            rankSpan.style.color = isLight ? 'var(--sq-light-coord)' : 'var(--sq-dark-coord)';
+            rankSpan.textContent = 8 - r;
+            sq.appendChild(rankSpan);
+          }
+          if (displayR === 7) {
+            const fileSpan = document.createElement('span');
+            fileSpan.className = 'absolute bottom-0.5 right-1 text-[10px] font-mono font-bold opacity-80 pointer-events-none';
+            fileSpan.style.color = isLight ? 'var(--sq-light-coord)' : 'var(--sq-dark-coord)';
+            fileSpan.textContent = String.fromCharCode(97 + c);
+            sq.appendChild(fileSpan);
+          }
+        }
+
+        // Piece rendering
+        if (piece) {
+          const pieceSpan = document.createElement('span');
+          const isWhitePiece = piece[0] === 'w';
+          let pieceColorClass = isWhitePiece
+            ? 'text-white drop-shadow-[0_2px_3px_rgba(0,0,0,0.85)]'
+            : 'text-slate-950 drop-shadow-[0_1px_1px_rgba(255,255,255,0.35)]';
+
+          if (userSettings.pieceStyle === 'alpha') {
+            pieceColorClass = isWhitePiece
+              ? 'text-emerald-200 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]'
+              : 'text-amber-400 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]';
+          }
+
+          pieceSpan.className = `chess-piece text-3xl sm:text-4xl md:text-[42px] ${pieceColorClass}`;
+          pieceSpan.textContent = PIECE_UNICODE[piece];
+          sq.appendChild(pieceSpan);
+        }
+
+        // Legal move target dots (respects userSettings.showLegalDots)
+        const isLegalTarget = legalMovesForSelected.some(m => m.r === r && m.c === c);
+        if (isLegalTarget && userSettings.showLegalDots) {
+          const dot = document.createElement('span');
+          if (piece) {
+            dot.className = 'absolute inset-1 rounded-full border-[3px] border-emerald-400/80 pointer-events-none';
+          } else {
+            dot.className = 'w-3.5 h-3.5 rounded-full bg-emerald-400/75 pointer-events-none';
+          }
+          sq.appendChild(dot);
+        }
+
+        sq.addEventListener('click', () => handleSquareClick(r, c));
+        boardEl.appendChild(sq);
+      }
+
+      updateCapturedPiecesUI();
+      updateEvaluationBar();
+    }
+
+    // -------------------- 6. INTERACTIVE MOVE EXECUTION --------------------
+    function handleSquareClick(r, c) {
+      if (!gameActive || pendingPromotion) return;
+      if (turn === 'b') return; // Wait for AI
+
+      const clickedPiece = board[r][c];
+      const targetMove = legalMovesForSelected.find(m => m.r === r && m.c === c);
+
+      if (targetMove && selectedSq) {
+        const movingPiece = board[selectedSq.r][selectedSq.c];
+        // Check Pawn Promotion
+        if (movingPiece === 'wP' && r === 0) {
+          if (userSettings.autoQueen) {
+            executeMove(selectedSq, { r, c }, 'Q');
+          } else {
+            showPromotionDialog(selectedSq, { r, c });
+          }
+          return;
+        }
+        executeMove(selectedSq, { r, c });
+        return;
+      }
+
+      if (clickedPiece && clickedPiece[0] === 'w') {
+        selectedSq = { r, c };
+        legalMovesForSelected = getLegalMoves(board, r, c);
+      } else {
+        selectedSq = null;
+        legalMovesForSelected = [];
+      }
+      renderBoard();
+    }
+
+    function showPromotionDialog(from, to) {
+      pendingPromotion = { from, to };
+      const overlay = document.getElementById('promotion-overlay');
+      const choices = document.getElementById('promotion-choices');
+      choices.innerHTML = '';
+      ['Q', 'R', 'B', 'N'].forEach(pType => {
+        const btn = document.createElement('button');
+        btn.className = 'w-14 h-14 rounded-xl bg-obsidian-850 hover:bg-emerald-500 hover:text-obsidian-950 border border-slate-700 text-3xl text-white transition-all shadow-lg';
+        btn.textContent = PIECE_UNICODE['w' + pType];
+        btn.onclick = () => {
+          overlay.classList.add('hidden');
+          pendingPromotion = null;
+          executeMove(from, to, pType);
+        };
+        choices.appendChild(btn);
+      });
+      overlay.classList.remove('hidden');
+    }
+
+    function executeMove(from, to, promotionType = null) {
+      // Save snapshot for Takeback
+      stateSnapshots.push({
+        board: board.map(r => [...r]),
+        turn,
+        capturedByWhite: [...capturedByWhite],
+        capturedByBlack: [...capturedByBlack],
+        moveHistory: [...moveHistory],
+        lastMove
+      });
+
+      const movingPiece = board[from.r][from.c];
+      const capturedPiece = board[to.r][to.c];
+
+      if (capturedPiece) {
+        if (movingPiece[0] === 'w') capturedByWhite.push(capturedPiece);
+        else capturedByBlack.push(capturedPiece);
+      }
+
+      board[to.r][to.c] = promotionType ? movingPiece[0] + promotionType : movingPiece;
+      board[from.r][from.c] = null;
+
+      // Record Algebraic Notation
+      const pieceLetter = movingPiece[1] === 'P' ? '' : movingPiece[1];
+      const captureSymbol = capturedPiece ? 'x' : '';
+      const pawnFile = (movingPiece[1] === 'P' && capturedPiece) ? sqToAlgebraic(from.r, from.c)[0] : '';
+      const promoSuffix = promotionType ? '=' + promotionType : '';
+      const notation = `${pieceLetter}${pawnFile}${captureSymbol}${sqToAlgebraic(to.r, to.c)}${promoSuffix}`;
+
+      moveHistory.push(notation);
+      lastMove = { from, to };
+      hintMove = null;
+      selectedSq = null;
+      legalMovesForSelected = [];
+
+      // Increment clock
+      if (turn === 'w') whiteSeconds += clockIncrement;
+      else blackSeconds += clockIncrement;
+
+      turn = turn === 'w' ? 'b' : 'w';
+      playMoveSound(Boolean(capturedPiece));
+      startClocks();
+      renderMoveHistory();
+      renderBoard();
+
+      // Check Game Over conditions
+      const nextMoves = getAllLegalMovesForColor(board, turn);
+      if (nextMoves.length === 0) {
+        gameActive = false;
+        clearInterval(clockInterval);
+        const inCheck = isKingInCheck(board, turn);
+        const statusMsg = inCheck
+          ? `Checkmate! ${turn === 'w' ? 'Black' : 'White'} wins!`
+          : 'Stalemate! Match drawn.';
+        document.getElementById('game-status-text').textContent = statusMsg;
+        showToast(statusMsg, 'info');
+        return;
+      }
+
+      document.getElementById('game-status-text').textContent = turn === 'w' ? 'White to move' : 'Stockfish is thinking...';
+
+      if (turn === 'b' && gameActive) {
+        setTimeout(makeAiMove, 420);
+      }
+    }
+
+    // -------------------- 7. SMART MINIMAX/HEURISTIC AI ENGINE --------------------
+    function evaluateBoardMaterial(b) {
+      let score = 0;
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          const p = b[r][c];
+          if (!p) continue;
+          const val = PIECE_VALUES[p[1]] || 0;
+          const centerBonus = (3.5 - Math.abs(3.5 - r)) * 6 + (3.5 - Math.abs(3.5 - c)) * 6;
+          score += p[0] === 'w' ? (val + centerBonus) : -(val + centerBonus);
+        }
+      }
+      return score;
+    }
+
+    function makeAiMove() {
+      if (!gameActive || turn !== 'b') return;
+      const allMoves = getAllLegalMovesForColor(board, 'b');
+      if (allMoves.length === 0) return;
+
+      let bestMove = allMoves[0];
+      let bestScore = Infinity;
+
+      for (const m of allMoves) {
+        const clone = board.map(r => [...r]);
+        const target = clone[m.to.r][m.to.c];
+        clone[m.to.r][m.to.c] = clone[m.from.r][m.from.c] === 'bP' && m.to.r === 7 ? 'bQ' : clone[m.from.r][m.from.c];
+        clone[m.from.r][m.from.c] = null;
+
+        let evalScore = evaluateBoardMaterial(clone);
+        if (target) evalScore -= (PIECE_VALUES[target[1]] || 0) * 0.5;
+        // Add slight controlled randomness scaled inversely by AI level
+        const jitter = (Math.random() - 0.5) * (180 / aiLevel);
+        evalScore += jitter;
+
+        if (evalScore < bestScore) {
+          bestScore = evalScore;
+          bestMove = m;
+        }
+      }
+
+      const promo = board[bestMove.from.r][bestMove.from.c] === 'bP' && bestMove.to.r === 7 ? 'Q' : null;
+      executeMove(bestMove.from, bestMove.to, promo);
+    }
+
+    function showEngineHint() {
+      if (!gameActive || turn !== 'w') return;
+      const allMoves = getAllLegalMovesForColor(board, 'w');
+      if (!allMoves.length) return;
+      let best = allMoves[0];
+      let bestScore = -Infinity;
+      for (const m of allMoves) {
+        const clone = board.map(r => [...r]);
+        clone[m.to.r][m.to.c] = clone[m.from.r][m.from.c];
+        clone[m.from.r][m.from.c] = null;
+        const sc = evaluateBoardMaterial(clone);
+        if (sc > bestScore) {
+          bestScore = sc;
+          best = m;
+        }
+      }
+      hintMove = best;
+      renderBoard();
+      showToast(`Stockfish recommends: ${sqToAlgebraic(best.from.r, best.from.c)} → ${sqToAlgebraic(best.to.r, best.to.c)}`, 'info');
+    }
+
+    function updateEvaluationBar() {
+      const raw = evaluateBoardMaterial(board) / 100;
+      const clamped = Math.max(-8, Math.min(8, raw));
+      const whitePct = Math.round(50 + (clamped / 8) * 45);
+      document.getElementById('white-eval-bar')?.style;
+      document.getElementById('eval-white-fill').style.height = `${whitePct}%`;
+      document.getElementById('eval-black-fill').style.height = `${100 - whitePct}%`;
+      const sign = raw >= 0 ? '+' : '';
+      document.getElementById('eval-score-text').textContent = `${sign}${raw.toFixed(1)}`;
+    }
+
+    // -------------------- 8. CLOCKS, MOVE HISTORY & CONTROLS --------------------
+    function formatClock(sec) {
+      const m = Math.floor(Math.max(0, sec) / 60);
+      const s = Math.max(0, sec) % 60;
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    function updateClockDisplays() {
+      document.getElementById('white-clock').textContent = formatClock(whiteSeconds);
+      document.getElementById('black-clock').textContent = formatClock(blackSeconds);
+    }
+
+    function startClocks() {
+      if (clockInterval) clearInterval(clockInterval);
+      clockInterval = setInterval(() => {
+        if (!gameActive) return;
+        if (turn === 'w') {
+          whiteSeconds--;
+          if (whiteSeconds <= 0) {
+            gameActive = false;
+            clearInterval(clockInterval);
+            showToast('Time expired! Black wins on time.', 'error');
+          }
+        } else {
+          blackSeconds--;
+          if (blackSeconds <= 0) {
+            gameActive = false;
+            clearInterval(clockInterval);
+            showToast('Opponent flagged! White wins on time.', 'success');
+          }
+        }
+        updateClockDisplays();
+      }, 1000);
+    }
+
+    function renderMoveHistory() {
+      const listEl = document.getElementById('move-history-list');
+      if (moveHistory.length === 0) {
+        listEl.innerHTML = '<div class="text-slate-500 text-center py-8 italic">Make your first move on the board to begin recording PGN notation...</div>';
+        return;
+      }
+      let html = '';
+      for (let i = 0; i < moveHistory.length; i += 2) {
+        const moveNum = Math.floor(i / 2) + 1;
+        const wMove = moveHistory[i] || '';
+        const bMove = moveHistory[i + 1] || '';
+        html += `
+          <div class="grid grid-cols-12 px-2.5 py-1.5 rounded-lg ${moveNum % 2 === 0 ? 'bg-obsidian-900/70' : ''}">
+            <span class="col-span-2 text-slate-500">${moveNum}.</span>
+            <span class="col-span-5 text-white font-semibold">${wMove}</span>
+            <span class="col-span-5 text-emerald-400 font-semibold">${bMove}</span>
+          </div>
+        `;
+      }
+      listEl.innerHTML = html;
+      listEl.scrollTop = listEl.scrollHeight;
+    }
+
+    function updateCapturedPiecesUI() {
+      document.getElementById('captured-by-white').textContent = capturedByWhite.map(p => PIECE_UNICODE[p]).join('');
+      document.getElementById('captured-by-black').textContent = capturedByBlack.map(p => PIECE_UNICODE[p]).join('');
+    }
+
+    function flipBoard() {
+      flipped = !flipped;
+      renderBoard();
+    }
+
+    function undoLastMove() {
+      if (stateSnapshots.length < 2) {
+        showToast('No full turn available to take back.', 'info');
+        return;
+      }
+      stateSnapshots.pop(); // AI move
+      const prev = stateSnapshots.pop(); // Player move
+      board = prev.board;
+      turn = prev.turn;
+      capturedByWhite = prev.capturedByWhite;
+      capturedByBlack = prev.capturedByBlack;
+      moveHistory = prev.moveHistory;
+      lastMove = prev.lastMove;
+      gameActive = true;
+      renderMoveHistory();
+      renderBoard();
+      showToast('Takeback applied.', 'info');
+    }
+
+    function handleResign() {
+      if (!gameActive) return;
+      if (userSettings.confirmResign && !resignConfirmPending) {
+        resignConfirmPending = true;
+        showToast('Click Resign again within 4 seconds to confirm.', 'error');
+        setTimeout(() => { resignConfirmPending = false; }, 4000);
+        return;
+      }
+      resignConfirmPending = false;
+      gameActive = false;
+      clearInterval(clockInterval);
+      document.getElementById('game-status-text').textContent = 'White resigned. Black wins.';
+      showToast('You resigned the match.', 'error');
+    }
+
+    function resetGame(openingName = 'Standard Starting Position') {
+      board = getInitialBoard();
+      turn = 'w';
+      selectedSq = null;
+      legalMovesForSelected = [];
+      lastMove = null;
+      hintMove = null;
+      moveHistory = [];
+      stateSnapshots = [];
+      capturedByWhite = [];
+      capturedByBlack = [];
+      gameActive = true;
+      clearInterval(clockInterval);
+      updateClockDisplays();
+      document.getElementById('active-opening-badge').textContent = openingName;
+      document.getElementById('game-status-text').textContent = 'White to move';
+      renderMoveHistory();
+      renderBoard();
+    }
+
+    function copyPgnToClipboard() {
+      if (!moveHistory.length) {
+        showToast('Play at least one move to export PGN.', 'info');
+        return;
+      }
+      let pgn = `[Event "MateVerse Rated Match"]\n[White "${userSettings.displayName}"]\n[Black "Stockfish Engine"]\n\n`;
+      for (let i = 0; i < moveHistory.length; i += 2) {
+        pgn += `${Math.floor(i / 2) + 1}. ${moveHistory[i]} ${moveHistory[i + 1] || ''} `;
+      }
+      copyText(pgn, 'Match PGN copied to clipboard!');
+    }
+
+    // -------------------- 9. MATCHMAKING, OPENINGS & LEADERBOARD --------------------
+    function selectTimeControl(label, seconds, inc, btnEl) {
+      document.getElementById('selected-tc-label').textContent = label;
+      whiteSeconds = seconds;
+      blackSeconds = seconds;
+      clockIncrement = inc;
+      updateClockDisplays();
+
+      document.querySelectorAll('.tc-btn').forEach(b => {
+        b.className = 'tc-btn p-2.5 rounded-xl border border-slate-700/80 bg-obsidian-900 hover:border-emerald-500/60 text-left transition-all';
+        b.querySelector('div:first-child').className = 'text-xs font-bold text-white';
+      });
+      btnEl.className = 'tc-btn p-2.5 rounded-xl border-2 border-emerald-500 bg-emerald-500/10 text-left transition-all';
+      btnEl.querySelector('div:first-child').className = 'text-xs font-bold text-emerald-400';
+    }
+
+    function updateAiLevel(lvl) {
+      aiLevel = parseInt(lvl, 10);
+      const elo = 1050 + aiLevel * 150;
+      document.getElementById('ai-elo-label').textContent = `Stockfish Lvl ${aiLevel} (${elo})`;
+      document.getElementById('opponent-rating').textContent = elo;
+    }
+
+    function startRatedMatchmaking() {
+      resetGame();
+      startClocks();
+      showToast(`Match started! ${document.getElementById('selected-tc-label').textContent} vs Stockfish.`);
+    }
+
+    const OPENINGS_DATA = [
+      {
+        name: 'Sicilian Najdorf',
+        eco: 'B90',
+        moves: '1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 a6',
+        winWhite: 38, draw: 31, winBlack: 31,
+        apply: () => {
+          resetGame('Sicilian Najdorf (B90)');
+          board[6][4] = null; board[4][4] = 'wP';
+          board[1][2] = null; board[3][2] = 'bP';
+          board[7][6] = null; board[5][5] = 'wN';
+          board[1][3] = null; board[2][3] = 'bP';
+          moveHistory = ['e4', 'c5', 'Nf3', 'd6'];
+          renderMoveHistory();
+          renderBoard();
+        }
+      },
+      {
+        name: "Queen's Gambit Declined",
+        eco: 'D37',
+        moves: '1. d4 d5 2. c4 e6 3. Nc3 Nf6 4. Nf3 Be7',
+        winWhite: 41, draw: 36, winBlack: 23,
+        apply: () => {
+          resetGame("Queen's Gambit Declined (D37)");
+          board[6][3] = null; board[4][3] = 'wP';
+          board[1][3] = null; board[3][3] = 'bP';
+          board[6][2] = null; board[4][2] = 'wP';
+          board[1][4] = null; board[2][4] = 'bP';
+          moveHistory = ['d4', 'd5', 'c4', 'e6'];
+          renderMoveHistory();
+          renderBoard();
+        }
+      },
+      {
+        name: 'Ruy Lopez: Berlin Defense',
+        eco: 'C65',
+        moves: '1. e4 e5 2. Nf3 Nc6 3. Bb5 Nf6 4. O-O Nxe4',
+        winWhite: 34, draw: 44, winBlack: 22,
+        apply: () => {
+          resetGame('Ruy Lopez Berlin (C65)');
+          board[6][4] = null; board[4][4] = 'wP';
+          board[1][4] = null; board[3][4] = 'bP';
+          board[7][6] = null; board[5][5] = 'wN';
+          board[0][1] = null; board[2][2] = 'bN';
+          board[7][5] = null; board[3][1] = 'wB';
+          moveHistory = ['e4', 'e5', 'Nf3', 'Nc6', 'Bb5'];
+          turn = 'b';
+          renderMoveHistory();
+          renderBoard();
+          setTimeout(makeAiMove, 450);
+        }
+      },
+      {
+        name: "King's Indian Defense",
+        eco: 'E60',
+        moves: '1. d4 Nf6 2. c4 g6 3. Nc3 Bg7 4. e4 d6',
+        winWhite: 40, draw: 29, winBlack: 31,
+        apply: () => {
+          resetGame("King's Indian Defense (E60)");
+          board[6][3] = null; board[4][3] = 'wP';
+          board[0][6] = null; board[2][5] = 'bN';
+          board[6][2] = null; board[4][2] = 'wP';
+          board[1][6] = null; board[2][6] = 'bP';
+          moveHistory = ['d4', 'Nf6', 'c4', 'g6'];
+          renderMoveHistory();
+          renderBoard();
+        }
+      }
+    ];
+
+    function renderOpenings() {
+      const grid = document.getElementById('openings-grid');
+      grid.innerHTML = OPENINGS_DATA.map((op, idx) => `
+        <div class="bg-obsidian-850/95 border border-slate-800 hover:border-emerald-500/40 rounded-2xl p-5 shadow-card-dark flex flex-col justify-between space-y-4 transition-all">
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="px-2 py-0.5 rounded font-mono text-[11px] bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">${op.eco}</span>
+              <span class="text-[11px] font-mono text-slate-400">GM Master DB</span>
+            </div>
+            <h3 class="font-display font-bold text-base text-white">${op.name}</h3>
+            <p class="font-mono text-xs text-slate-400 bg-obsidian-900 p-2 rounded-lg border border-slate-800/80">${op.moves}</p>
+          </div>
+
+          <div class="space-y-2">
+            <div class="flex justify-between text-[10px] font-mono text-slate-400">
+              <span>W ${op.winWhite}%</span>
+              <span>D ${op.draw}%</span>
+              <span>B ${op.winBlack}%</span>
+            </div>
+            <div class="h-2 rounded-full overflow-hidden flex bg-slate-800">
+              <div style="width:${op.winWhite}%" class="bg-slate-100"></div>
+              <div style="width:${op.draw}%" class="bg-slate-500"></div>
+              <div style="width:${op.winBlack}%" class="bg-emerald-500"></div>
+            </div>
+            <button onclick="loadOpening(${idx})" class="w-full mt-2 py-2 rounded-xl bg-obsidian-900 hover:bg-emerald-500 hover:text-obsidian-950 border border-slate-700 text-xs font-bold text-emerald-400 transition-colors">
+              <i class="fa-solid fa-chess-board mr-1.5"></i>Load onto Board
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function loadOpening(idx) {
+      OPENINGS_DATA[idx].apply();
+      document.getElementById('arena').scrollIntoView({ behavior: 'smooth' });
+      showToast(`Loaded ${OPENINGS_DATA[idx].name} onto the board!`);
+    }
+
+    const LEADERBOARD_DATA = {
+      blitz: [
+        { rank: 1, title: 'GM', name: 'DrNykterstein', country: '🇳🇴', rating: 3312, streak: '9W' },
+        { rank: 2, title: 'GM', name: 'Hikaru_Live', country: '🇺🇸', rating: 3289, streak: '6W' },
+        { rank: 3, title: 'GM', name: 'Firouzja2003', country: '🇫🇷', rating: 3241, streak: '4W' },
+        { rank: 4, title: 'IM', name: 'NairobiKnight_KE', country: '🇰🇪', rating: 2794, streak: '7W' },
+        { rank: 5, title: 'FM', name: 'TacticalViper', country: '🇬🇧', rating: 2640, streak: '3W' }
+      ],
+      bullet: [
+        { rank: 1, title: 'GM', name: 'DanielNaroditsky', country: '🇺🇸', rating: 3355, streak: '12W' },
+        { rank: 2, title: 'GM', name: 'PenguinGM1', country: '🇺🇸', rating: 3301, streak: '5W' },
+        { rank: 3, title: 'GM', name: 'NihalSarin', country: '🇮🇳', rating: 3278, streak: '8W' },
+        { rank: 4, title: 'IM', name: 'SavannaGambit', country: '🇰🇪', rating: 2810, streak: '4W' }
+      ],
+      rapid: [
+        { rank: 1, title: 'GM', name: 'Gukesh_D', country: '🇮🇳', rating: 2945, streak: '5W' },
+        { rank: 2, title: 'GM', name: 'Nodirbek_A', country: '🇺🇿', rating: 2918, streak: '3W' },
+        { rank: 3, title: 'GM', name: 'Alireza_R', country: '🇫🇷', rating: 2890, streak: '4W' },
+        { rank: 4, title: 'CM', name: 'ObsidianQueen', country: '🇨🇦', rating: 2512, streak: '6W' }
+      ]
+    };
+
+    function filterLeaderboard(mode, btnEl) {
+      if (btnEl) {
+        document.querySelectorAll('.lb-filter-btn').forEach(b => {
+          b.className = 'lb-filter-btn px-4 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all';
+        });
+        btnEl.className = 'lb-filter-btn px-4 py-1.5 rounded-lg text-xs font-bold bg-emerald-500 text-obsidian-950 transition-all';
+      }
+      const rows = LEADERBOARD_DATA[mode] || LEADERBOARD_DATA.blitz;
+      document.getElementById('leaderboard-tbody').innerHTML = rows.map(p => `
+        <tr class="hover:bg-obsidian-900/70 transition-colors">
+          <td class="py-3.5 px-5 font-mono font-bold ${p.rank === 1 ? 'text-gold-400' : 'text-slate-400'}">#${p.rank}</td>
+          <td class="py-3.5 px-5">
+            <div class="flex items-center gap-2">
+              <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-gold-500/15 text-gold-400 border border-gold-500/30">${p.title}</span>
+              <span class="font-bold text-white">${p.name}</span>
+              <span>${p.country}</span>
+            </div>
+          </td>
+          <td class="py-3.5 px-5 font-mono font-bold text-emerald-400">${p.rating}</td>
+          <td class="py-3.5 px-5 font-mono text-xs text-slate-300">${p.streak}</td>
+          <td class="py-3.5 px-5 text-right">
+            <button onclick="challengePlayer('${p.name}', ${p.rating})" class="px-3 py-1.5 rounded-lg bg-obsidian-900 hover:bg-emerald-500 hover:text-obsidian-950 border border-slate-700 text-xs font-semibold text-slate-200 transition-colors">
+              Challenge
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function challengePlayer(name, rating) {
+      document.getElementById('opponent-name').textContent = name;
+      document.getElementById('opponent-rating').textContent = rating;
+      resetGame(`Challenge vs ${name}`);
+      startClocks();
+      document.getElementById('arena').scrollIntoView({ behavior: 'smooth' });
+      showToast(`Live challenge started against ${name} (${rating})!`);
+    }
+
+    // -------------------- 10. SETTINGS MODAL & REAL-TIME PREFERENCES --------------------
+    function openSettingsModal() {
+      document.getElementById('settings-modal').classList.remove('hidden');
+    }
+    function closeSettingsModal() {
+      document.getElementById('settings-modal').classList.add('hidden');
+    }
+
+    function switchSettingsTab(tabName, btnEl) {
+      document.querySelectorAll('.settings-tab-btn').forEach(b => {
+        b.className = 'settings-tab-btn py-3 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-white whitespace-nowrap';
+      });
+      btnEl.className = 'settings-tab-btn py-3 text-xs font-bold border-b-2 border-emerald-500 text-emerald-400 whitespace-nowrap';
+
+      document.querySelectorAll('.settings-panel').forEach(p => p.classList.add('hidden'));
+      document.getElementById(`settings-tab-${tabName}`).classList.remove('hidden');
+    }
+
+    function setBoardTheme(theme) {
+      userSettings.boardTheme = theme;
+      document.body.setAttribute('data-board-theme', theme);
+      document.querySelectorAll('.theme-card').forEach(card => {
+        const isMatch = card.getAttribute('data-theme-opt') === theme;
+        card.className = isMatch
+          ? 'theme-card p-3 rounded-xl border-2 border-emerald-500 bg-obsidian-850 text-left transition-all'
+          : 'theme-card p-3 rounded-xl border border-slate-700 bg-obsidian-850 text-left transition-all';
+      });
+      renderBoard();
+    }
+
+    function updateSettingsFromUI() {
+      userSettings.pieceStyle = document.getElementById('setting-piece-style').value;
+      userSettings.showCoords = document.getElementById('setting-coords').checked;
+      userSettings.showLegalDots = document.getElementById('setting-legal-dots').checked;
+      userSettings.soundEnabled = document.getElementById('setting-sound').checked;
+      userSettings.autoQueen = document.getElementById('setting-auto-queen').checked;
+      userSettings.premoves = document.getElementById('setting-premoves').checked;
+      userSettings.confirmResign = document.getElementById('setting-confirm-resign').checked;
+      renderBoard();
+    }
+
+    function saveSettingsAndClose() {
+      updateSettingsFromUI();
+      const newName = document.getElementById('setting-display-name').value.trim();
+      if (newName) {
+        userSettings.displayName = newName;
+        document.getElementById('user-display-name').textContent = newName;
+      }
+      closeSettingsModal();
+      showToast('All board, gameplay & account settings saved!');
+    }
+
+    function resetSettingsToDefault() {
+      setBoardTheme('obsidian');
+      document.getElementById('setting-piece-style').value = 'neo';
+      document.getElementById('setting-coords').checked = true;
+      document.getElementById('setting-legal-dots').checked = true;
+      document.getElementById('setting-sound').checked = true;
+      document.getElementById('setting-auto-queen').checked = false;
+      document.getElementById('setting-premoves').checked = true;
+      document.getElementById('setting-confirm-resign').checked = true;
+      document.getElementById('setting-display-name').value = 'You (Grandmaster)';
+      document.getElementById('user-display-name').textContent = 'You (Grandmaster)';
+      setAdsVisibility(true);
+      updateSettingsFromUI();
+      showToast('Settings restored to MateVerse defaults.', 'info');
+    }
+
+    // -------------------- 11. AD SLOTS & PRO TOGGLE --------------------
+    function setAdsVisibility(visible) {
+      userSettings.adsHidden = !visible;
+      document.querySelectorAll('.ad-container').forEach(el => {
+        el.classList.toggle('hidden', !visible);
+      });
+      const hideCheckbox = document.getElementById('setting-hide-ads');
+      if (hideCheckbox) hideCheckbox.checked = !visible;
+      document.getElementById('nav-pro-label').textContent = visible ? 'Remove Ads' : 'Pro Active';
+    }
+
+    function toggleProMembership() {
+      const showAds = userSettings.adsHidden;
+      setAdsVisibility(showAds);
+      showToast(showAds ? 'Standard ad-supported layout restored.' : 'Pro Mode enabled! All ad slots hidden.', 'info');
+    }
+
+    // -------------------- 12. SUPPORT MODAL, TICKETS & AUTH --------------------
+    function openSupportModal(defaultCategory = null) {
+      if (defaultCategory) {
+        document.getElementById('modal-ticket-category').value = defaultCategory;
+      }
+      document.getElementById('support-modal').classList.remove('hidden');
+    }
+    function closeSupportModal() {
+      document.getElementById('support-modal').classList.add('hidden');
+    }
+
+    function submitSupportTicket(e, source) {
+      e.preventDefault();
+      const ticketId = '#MV-' + Math.floor(1000 + Math.random() * 9000);
+      e.target.reset();
+      if (source === 'modal') {
+        closeSupportModal();
+        showToast(`Support ticket ${ticketId} created! Our team will reply via email.`);
+      } else {
+        document.getElementById('inline-ticket-id').textContent = ticketId;
+        document.getElementById('inline-ticket-confirmation').classList.remove('hidden');
+        showToast(`Support ticket ${ticketId} submitted!`);
+      }
+    }
+
+    function openAuthModal() {
+      document.getElementById('auth-modal').classList.remove('hidden');
+    }
+    function closeAuthModal() {
+      document.getElementById('auth-modal').classList.add('hidden');
+    }
+    function completeMockSignIn(username) {
+      userSettings.displayName = username;
+      document.getElementById('user-display-name').textContent = username;
+      document.getElementById('setting-display-name').value = username;
+      document.getElementById('auth-btn-text').textContent = username;
+      closeAuthModal();
+      showToast(`Welcome back, ${username}! Rating synced.`);
+    }
+    function handleEmailAuth(e) {
+      e.preventDefault();
+      const name = document.getElementById('auth-username-input').value.trim() || 'ChessMaster';
+      completeMockSignIn(name);
+    }
+
+    function toggleMobileMenu() {
+      document.getElementById('mobile-menu').classList.toggle('hidden');
+    }
+
+    // -------------------- 13. INITIALIZE ON LOAD --------------------
+    window.onload = function () {
+      renderBoard();
+      renderOpenings();
+      filterLeaderboard('blitz');
+      updateClockDisplays();
+    };
+  </script>
+</body>
+</html>
