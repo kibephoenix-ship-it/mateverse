@@ -15,34 +15,39 @@
 <body>
 <div class="shell">
   <header class="topbar">
-    <a class="brand" href="https://mateverse-9jqw.onrender.com/" target="_blank" rel="noreferrer">
+    <a class="brand" href="#view-play">
       <img class="brand-logo" src="/mateverse-logo.png" alt="MateVerse logo">
       <span>MATE<span>VERSE</span><small>CHESS WITHOUT BORDERS</small></span>
     </a>
-    <div class="top-right"><span class="connection"><i></i><b id="connection">Connecting</b></span><button class="profile-chip" id="profile-open">♙ <span id="profile-name">Guest · Sign in</span></button></div>
-  </header>
-  <main>
-    <section class="hero">
-      <div><p class="eyebrow">THE NEXT MOVE IS YOURS</p><h1>Enter the <em>Verse.</em></h1><p>Learn the game. Outsmart the board. Challenge the world.</p><p class="hero-template-tagline">Play, analyze, and master chess in the MateVerse arena.</p></div>
-      <div class="hero-orb" aria-hidden="true"><span>♛</span></div>
-    </section>
-
     <nav class="tabs" aria-label="Game modes">
       <button class="tab active" data-view="play" data-i18n="navPlay">⚔ Play</button>
-      <button class="tab" data-view="coach" data-i18n="navCoach">✦ Coach</button>
       <button class="tab" data-view="learn" data-i18n="navLearn">♟ Learn</button>
       <button class="tab" data-view="rank" data-i18n="navRank">🏆 Rankings</button>
       <button class="tab" data-view="history" data-i18n="navHistory">📜 My games</button>
       <button class="tab" data-view="community">♙ Friends & reviews</button>
       <button class="tab" data-view="settings" data-i18n="navSettings">⚙ Settings</button>
     </nav>
+    <div class="top-right"><span class="connection"><i></i><b id="connection">Connecting</b></span><button class="profile-chip" id="profile-open">♙ <span id="profile-name">Guest · Sign in</span></button></div>
+  </header>
+  <main>
+    <section class="hero arena-heading">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="hero-live-dot" aria-hidden="true"></span> MATEVERSE CHESS ARENA</p>
+        <h1>Play, analyze, <em>improve.</em></h1>
+        <p>Learn the game. Outsmart the board. Challenge the world.</p>
+      </div>
+      <div class="hero-actions">
+        <button class="action secondary" data-feature-view="learn">Explore openings</button>
+        <button class="action primary" data-feature-view="play">Go to board</button>
+      </div>
+    </section>
 
     <section id="view-play" class="view active">
       <div class="game-grid">
         <section class="board-card glass">
           <div id="connection-banner" class="connection-banner" role="status" aria-live="polite">Connecting to match server…</div>
           <div id="winner-banner" class="winner-banner" role="status" aria-live="assertive" hidden><span id="winner-title"></span><small id="winner-detail"></small><button id="rematch" class="action gold" hidden>Request rematch</button></div>
-          <div class="player-row"><div class="avatar dark-avatar">♚</div><div><b id="black-name">Computer</b><small id="black-caption">Black · Opponent</small></div><span class="elo" id="black-elo">AI</span></div>
+          <div class="player-row"><div class="avatar dark-avatar">♚</div><div><b id="black-name">Computer</b><small id="black-caption">Black · Opponent</small></div><span class="elo" id="black-elo">AI</span><div class="clock opponent-clock" id="black-clock">05:00</div></div>
           <div class="board-frame">
             <div class="ranks" aria-hidden="true"><span>8</span><span>7</span><span>6</span><span>5</span><span>4</span><span>3</span><span>2</span><span>1</span></div>
             <div id="board" class="board" aria-label="Chess board"></div>
@@ -54,12 +59,12 @@
           <div class="board-tools"><button class="action ghost" id="flip-board">⇅ Flip board</button><button class="action ghost" id="cancel-premove" hidden>Cancel premove</button><button class="action ghost" id="export-pgn">↓ Export PGN</button><button class="action ghost" id="copy-fen">Copy FEN</button><label class="sound-toggle"><input type="checkbox" id="sound-toggle" checked> Sound</label></div>
           <div id="review-controls" class="review-controls" hidden><button class="action gold" id="review-open">Review game</button><button class="action ghost" id="review-start" aria-label="First move">|◀</button><button class="action ghost" id="review-prev" aria-label="Previous move">◀</button><span id="review-position">Live game</span><button class="action ghost" id="review-next" aria-label="Next move">▶</button><button class="action ghost" id="review-end" aria-label="Latest move">▶|</button><button class="action secondary" id="review-exit">Exit review</button></div>
           <div class="files" aria-hidden="true"><span>a</span><span>b</span><span>c</span><span>d</span><span>e</span><span>f</span><span>g</span><span>h</span></div>
-          <div class="player-row bottom-player"><div class="avatar light-avatar">♔</div><div><b id="white-name">You</b><small id="white-caption">White · You</small></div><span class="elo" id="white-elo">YOU</span></div>
+          <div class="player-row bottom-player"><div class="avatar light-avatar">♔</div><div><b id="white-name">You</b><small id="white-caption">White · You</small></div><span class="elo" id="white-elo">YOU</span><div class="clock player-clock" id="white-clock">05:00</div></div>
         </section>
 
         <aside class="right-rail">
           <section class="glass control-card">
-            <div class="card-title"><span data-i18n="matchControl">MATCH CONTROL</span><span class="live"><i></i> READY</span></div>
+            <div class="card-title"><span>QUICK MATCH</span><span class="live"><i></i> READY</span></div>
             <div class="mode-select">
               <button class="mode-choice selected" data-mode="computer" data-i18n="modeComputer">Computer</button>
               <button class="mode-choice" data-mode="online" data-i18n="modeOnline">Online</button>
@@ -80,17 +85,18 @@
               <button class="action primary full" id="create-friend-room">Create invite room</button>
               <p class="micro">Create a room, then share its code. Your friend can choose Online and enter the code to join.</p>
             </div>
-            <div class="clock-row"><div class="clock" id="white-clock">10:00</div><label>Time<select id="time-control"><option value="0">No clock</option><option value="180">3 + 0</option><option value="300" selected>5 + 0</option><option value="600">10 + 0</option><option value="900">15 + 0</option></select></label><div class="clock" id="black-clock">10:00</div></div>
-            <div class="status-box"><small data-i18n="gameStatus">GAME STATUS</small><b id="status">Ready to play</b><p id="status-detail">Press Start game when you're ready.</p></div>
+            <div class="quick-time-control"><label for="time-control">TIME CONTROL</label><select id="time-control"><option value="0">No clock</option><option value="180">3 minutes</option><option value="300" selected>5 minutes</option><option value="600">10 minutes</option><option value="900">15 minutes</option></select></div>
             <button class="action gold full" id="start-game" data-i18n="startGame">Start game</button>
             <div class="button-row"><button class="action secondary" id="new-game" data-i18n="newGame">New game</button><button class="action ghost" id="undo" data-i18n="undo">Undo</button></div>
             <div class="button-row"><button class="action ghost" id="offer-draw" data-i18n="offerDraw">Offer draw</button><button class="action ghost" id="resign" data-i18n="resign">Resign</button></div>
           </section>
 
           <section class="glass coach-card">
-            <div class="card-title"><span data-i18n="mateCoach">✦ MATE COACH</span><span class="tag" data-i18n="liveAnalysis">LIVE ANALYSIS</span></div>
-            <p id="coach-message">Get a move suggestion with a quick explanation.</p>
+            <div class="card-title"><span>LIVE ANALYSIS</span><span class="tag">LOCAL EVALUATION</span></div>
+            <div class="status-box"><small data-i18n="gameStatus">GAME STATUS</small><b id="status">Ready to play</b><p id="status-detail">Press Start game when you're ready.</p></div>
+            <p class="analysis-disclaimer">Local position estimate and move suggestions · no Stockfish engine is connected.</p><p id="coach-message">Get a move suggestion with a quick explanation.</p>
             <button class="action gold full" id="hint-button" data-i18n="strongMove">✦ Find a strong move</button>
+            <button class="action ghost full" data-feature-view="coach">Open coach workspace</button>
           </section>
 
           <section class="glass chat-card" id="chat-card" hidden><div class="card-title"><span data-i18n="liveChat">LIVE MATCH CHAT</span><span class="tag" data-i18n="roomOnly">ROOM ONLY</span></div><div id="chat-messages" class="chat-messages" aria-live="polite"></div><form id="chat-form" class="chat-form"><input id="chat-input" maxlength="240" placeholder="Say something…"><button class="action secondary" data-i18n="send">Send</button></form></section>
@@ -113,6 +119,18 @@
 
     <section id="view-learn" class="view">
       <div class="content-panel glass">
+        <section class="openings-lab" id="openings">
+          <div class="section-heading">
+            <div><p class="eyebrow">REPERTOIRE LAB</p><h2>Explore classic <em>openings.</em></h2></div>
+            <p class="muted">Choose a line to load it onto the board and continue the game against the computer.</p>
+          </div>
+          <div class="opening-grid">
+            <article class="opening-card"><div class="opening-code">B90 <span>OPENING LINE</span></div><h3>Sicilian Najdorf</h3><p>1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 a6</p><button class="action secondary full" data-opening-name="Sicilian Najdorf" data-opening-pgn="1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 a6">Practice this line</button></article>
+            <article class="opening-card"><div class="opening-code">D37 <span>OPENING LINE</span></div><h3>Queen's Gambit Declined</h3><p>1. d4 d5 2. c4 e6 3. Nc3 Nf6 4. Nf3 Be7</p><button class="action secondary full" data-opening-name="Queen's Gambit Declined" data-opening-pgn="1. d4 d5 2. c4 e6 3. Nc3 Nf6 4. Nf3 Be7">Practice this line</button></article>
+            <article class="opening-card"><div class="opening-code">C65 <span>OPENING LINE</span></div><h3>Ruy Lopez: Berlin Defense</h3><p>1. e4 e5 2. Nf3 Nc6 3. Bb5 Nf6 4. O-O Nxe4</p><button class="action secondary full" data-opening-name="Ruy Lopez: Berlin Defense" data-opening-pgn="1. e4 e5 2. Nf3 Nc6 3. Bb5 Nf6 4. O-O Nxe4">Practice this line</button></article>
+            <article class="opening-card"><div class="opening-code">E60 <span>OPENING LINE</span></div><h3>King's Indian Defense</h3><p>1. d4 Nf6 2. c4 g6 3. Nc3 Bg7 4. e4 d6</p><button class="action secondary full" data-opening-name="King's Indian Defense" data-opening-pgn="1. d4 Nf6 2. c4 g6 3. Nc3 Bg7 4. e4 d6">Practice this line</button></article>
+          </div>
+        </section>
         <p class="eyebrow">CHESS FOUNDATIONS</p><h2>Know your <em>pieces.</em></h2>
         <div class="piece-grid">
           <article><b>♙ Pawn</b><p>Moves forward one square. From its starting rank it may move two. Captures one square diagonally.</p></article>
@@ -128,7 +146,7 @@
 
     <section id="view-rank" class="view">
       <div class="content-panel glass">
-        <p class="eyebrow">THE GLOBAL ARENA</p><h2>Player <em>rankings.</em></h2>
+        <p class="eyebrow">THE GLOBAL ARENA</p><h2>Global <em>leaderboard.</em></h2>
         <p class="muted">Create an account to appear on the global leaderboard. Rated results are recorded when both players are signed in.</p>
         <div class="stat-grid"><div><small>LOCAL WINS</small><b id="stat-wins">0</b></div><div><small>LOCAL GAMES</small><b id="stat-games">0</b></div><div><small>WIN RATE</small><b id="stat-rate">—</b></div></div>
         <button class="action secondary" id="share-ranking">Share my ranking</button>

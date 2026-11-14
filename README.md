@@ -11,6 +11,7 @@ MateVerse is a responsive chess web app with a futuristic gaming interface. This
 - Low-time clock alerts, an in-game server-connection banner, computer-game recovery and online-room resume credentials in LocalStorage, plus one-click rematch requests.
 - Computer opponent with beginner, intermediate and advanced search levels.
 - Mate Coach move suggestions and chess-piece learning guide.
+- Opening repertoire cards for the Sicilian Najdorf, Queen’s Gambit Declined, Ruy Lopez Berlin Defense and King’s Indian Defense; selecting a line loads it into a computer practice game.
 - Online matchmaking and private rooms using Socket.IO, with copyable invite codes, synchronized player names and move history.
 - Player accounts with verified email/password or optional Google sign-in; passwords are hashed with Node.js scrypt.
 - Friend search and requests, saved connections, and live match challenges for friends who are online.
