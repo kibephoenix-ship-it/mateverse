@@ -27,9 +27,9 @@ MateVerse is a responsive chess web app with a futuristic gaming interface. This
 - Board flip, move sounds, PGN export, FEN copy and responsive layout.
 - `/health` endpoint for basic hosting health checks.
 
-## Interactive arena preview
+## Site-wide arena design
 
-Open /arena-analysis.html from the app navigation to view the supplied interactive chess arena and engine analysis template. The existing MateVerse app remains the default homepage with its accounts, online play, rankings and history features.
+The supplied interactive arena template informs the visual design across the MateVerse website, including play, coaching, learning, rankings, game history, community and settings. The existing live app interactions and account data remain part of the main experience.
 
 ## Run locally
 

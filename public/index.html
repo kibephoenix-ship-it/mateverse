@@ -3,8 +3,11 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#080d19">
-  <title>MateVerse — Chess Without Borders</title>
+  <title>MateVerse — Play, Analyze &amp; Master Chess | Chess Without Borders</title>
   <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/style.css">
   <script src="/socket.io/socket.io.js" defer></script>
   <script type="module" src="/app.js" defer></script>
@@ -20,7 +23,7 @@
   </header>
   <main>
     <section class="hero">
-      <div><p class="eyebrow">THE NEXT MOVE IS YOURS</p><h1>Enter the <em>Verse.</em></h1><p>Learn the game. Outsmart the board. Challenge the world.</p></div>
+      <div><p class="eyebrow">THE NEXT MOVE IS YOURS</p><h1>Enter the <em>Verse.</em></h1><p>Learn the game. Outsmart the board. Challenge the world.</p><p class="hero-template-tagline">Play, analyze, and master chess in the MateVerse arena.</p></div>
       <div class="hero-orb" aria-hidden="true"><span>♛</span></div>
     </section>
 
@@ -32,7 +35,6 @@
       <button class="tab" data-view="history" data-i18n="navHistory">📜 My games</button>
       <button class="tab" data-view="community">♙ Friends & reviews</button>
       <button class="tab" data-view="settings" data-i18n="navSettings">⚙ Settings</button>
-      <a class="tab" href="/arena-analysis.html">Arena preview</a>
     </nav>
 
     <section id="view-play" class="view active">
