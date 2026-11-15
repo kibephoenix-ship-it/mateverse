@@ -112,7 +112,6 @@ function updateProfileStats(user){
  $("account-wins").textContent=(user.wins||0)+(user.computerWins||0);
  $("account-losses").textContent=(user.losses||0)+(user.computerLosses||0);
  $("account-draws").textContent=(user.draws||0)+(user.computerDraws||0);
- $("profile-name").textContent=`${user.displayName} · ${user.rating}`;
  $("account-summary").textContent=`Signed in as ${user.displayName} (@${user.username}) · ${user.rating} rating · ${(user.games||0)+(user.computerGames||0)} games.`;
 }
 function renderProfileChip(user=account){
@@ -489,7 +488,6 @@ function switchAuthMode(){
 }
 function activateAccount(user){
  account=user;name=user.displayName;localStorage.setItem("mateverse-name",name);
- $("profile-name").textContent=`${name} · ${user.rating}`;
  $("account-form").hidden=true;$("account-signed-in").hidden=false;
  updateProfileStats(user);syncSocketIdentity();loadLeaderboard();loadHistory();loadCommunity();
  openProfile();
@@ -518,12 +516,12 @@ async function resendVerification(){
  catch(error){showProfileError(error.message);}
 }
 async function logout(){
- try{await api("/api/logout",{});account=null;renderProfileChip(null);$("profile-name").textContent=name+" · Sign in";$("account-form").hidden=false;$("account-signed-in").hidden=true;syncSocketIdentity();openProfile();loadLeaderboard();loadCommunity();toast("Signed out.");}
+ try{await api("/api/logout",{});account=null;renderProfileChip(null);$("account-form").hidden=false;$("account-signed-in").hidden=true;syncSocketIdentity();openProfile();loadLeaderboard();loadCommunity();toast("Signed out.");}
  catch(error){toast(error.message);}
 }
 async function loadAccount(){
- try{const {user}=await api("/api/me");account=user;if(user){name=user.displayName;updateProfileStats(user);socket.emit("setProfile",{name});loadHistory();loadCommunity();}else $("profile-name").textContent=name+" · Sign in";}
- catch(error){$("profile-name").textContent=name+" · Sign in";}
+ try{const {user}=await api("/api/me");account=user;if(user){name=user.displayName;updateProfileStats(user);socket.emit("setProfile",{name});loadHistory();loadCommunity();}else renderProfileChip(null);}
+ catch(error){renderProfileChip(null);}
 }
 function safeText(tag,text,className=""){const el=document.createElement(tag);el.textContent=text;if(className)el.className=className;return el;}
 function communityMessage(id,text){$(id).replaceChildren(safeText("p",text,"muted"));}
@@ -708,6 +706,6 @@ $("time-control").addEventListener("change",()=>{if(mode==="online")toast("Clock
 $("offer-draw").addEventListener("click",()=>{if(mode!=="online"||!roomCode)return toast("Draw offers are available in online matches.");socket.emit("offerDraw",{code:roomCode});toast("Draw offer sent.");});
 $("resign").addEventListener("click",()=>{if(mode!=="online"||!roomCode)return toast("Resignation is available in online matches.");if(confirm("Resign this game?"))socket.emit("resign",{code:roomCode});});
 $("chat-form").addEventListener("submit",e=>{e.preventDefault();const message=$("chat-input").value.trim();if(!message)return;if(mode!=="online"||!roomCode||!onlineReady)return toast("Join an online room before sending a message.");if(!socket.connected)return toast("Chat is unavailable while disconnected.");socket.emit("chatMessage",{code:roomCode,message},reply=>{if(!reply?.ok)return toast(reply?.error||"Message could not be sent.");$("chat-input").value="";});});
-$("footer-year").textContent=new Date().getFullYear();$("profile-name").textContent=name;
+$("footer-year").textContent=new Date().getFullYear();
 applySettings();updateStats();socket.emit("setProfile",{name,username:account?.username});if(!restoreActiveGame())resetClocks();loadAccount();loadLeaderboard();loadReviews();loadGoogleSignIn();verifyEmailFromLink();render();
 const sharedPlayer=new URLSearchParams(location.search).get("player");if(sharedPlayer){showView("community",true);showPublicProfile(sharedPlayer);}
