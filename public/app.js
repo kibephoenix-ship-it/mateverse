@@ -1,21 +1,25 @@
 import { Chess } from "/vendor/chess.js";
 
 const adsScriptUrl = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1947287610112705";
-const adsSlotId = "mateverse-ads-slot";
+const adsContainerId = "mateverse-ad-container";
+const adsSlotId = "7072069487";
 window.adsbygoogle = window.adsbygoogle || [];
+let adsInitialized = false;
 
 function ensureAdSenseSlot(){
-  if (document.getElementById(adsSlotId)) return;
+  if (document.getElementById(adsContainerId)) return;
   const slot = document.createElement("div");
-  slot.id = adsSlotId;
+  slot.id = adsContainerId;
   slot.className = "adsense-slot";
-  slot.innerHTML = '<ins class="adsbygoogle" style="display:block;width:300px;height:250px;margin:16px auto;" data-ad-client="ca-pub-1947287610112705" data-ad-slot="mateverse-ads-slot" data-ad-format="auto" data-full-width-responsive="true"></ins>';
+  slot.innerHTML = `<ins class="adsbygoogle" style="display:block;width:300px;height:250px;margin:16px auto;" data-ad-client="ca-pub-1947287610112705" data-ad-slot="${adsSlotId}" data-ad-format="auto" data-full-width-responsive="true"></ins>`;
   const target = document.querySelector(".hero") || document.querySelector(".shell") || document.body;
   if (target && target.parentNode) target.parentNode.insertBefore(slot, target.nextSibling || null);
 }
 
 function initializeAds(){
   ensureAdSenseSlot();
+  if (adsInitialized) return;
+  adsInitialized = true;
   try {
     window.adsbygoogle.push({});
   } catch (error) {
@@ -112,7 +116,6 @@ function updateProfileStats(user){
  $("account-wins").textContent=(user.wins||0)+(user.computerWins||0);
  $("account-losses").textContent=(user.losses||0)+(user.computerLosses||0);
  $("account-draws").textContent=(user.draws||0)+(user.computerDraws||0);
- $("profile-name").textContent=`${user.displayName} · ${user.rating}`;
  $("account-summary").textContent=`Signed in as ${user.displayName} (@${user.username}) · ${user.rating} rating · ${(user.games||0)+(user.computerGames||0)} games.`;
 }
 function renderProfileChip(user=account){
@@ -489,7 +492,6 @@ function switchAuthMode(){
 }
 function activateAccount(user){
  account=user;name=user.displayName;localStorage.setItem("mateverse-name",name);
- $("profile-name").textContent=`${name} · ${user.rating}`;
  $("account-form").hidden=true;$("account-signed-in").hidden=false;
  updateProfileStats(user);syncSocketIdentity();loadLeaderboard();loadHistory();loadCommunity();
  openProfile();
@@ -518,12 +520,12 @@ async function resendVerification(){
  catch(error){showProfileError(error.message);}
 }
 async function logout(){
- try{await api("/api/logout",{});account=null;renderProfileChip(null);$("profile-name").textContent=name+" · Sign in";$("account-form").hidden=false;$("account-signed-in").hidden=true;syncSocketIdentity();openProfile();loadLeaderboard();loadCommunity();toast("Signed out.");}
+ try{await api("/api/logout",{});account=null;renderProfileChip(null);$("account-form").hidden=false;$("account-signed-in").hidden=true;syncSocketIdentity();openProfile();loadLeaderboard();loadCommunity();toast("Signed out.");}
  catch(error){toast(error.message);}
 }
 async function loadAccount(){
- try{const {user}=await api("/api/me");account=user;if(user){name=user.displayName;updateProfileStats(user);socket.emit("setProfile",{name});loadHistory();loadCommunity();}else $("profile-name").textContent=name+" · Sign in";}
- catch(error){$("profile-name").textContent=name+" · Sign in";}
+ try{const {user}=await api("/api/me");account=user;if(user){name=user.displayName;updateProfileStats(user);socket.emit("setProfile",{name});loadHistory();loadCommunity();}else renderProfileChip(null);}
+ catch(error){renderProfileChip(null);}
 }
 function safeText(tag,text,className=""){const el=document.createElement(tag);el.textContent=text;if(className)el.className=className;return el;}
 function communityMessage(id,text){$(id).replaceChildren(safeText("p",text,"muted"));}
@@ -596,11 +598,28 @@ async function shareContent(title,text,url){
 }
 function shareCurrentProfile(){if(!account){openProfile();return;}const wins=(account.wins||0)+(account.computerWins||0),losses=(account.losses||0)+(account.computerLosses||0),draws=(account.draws||0)+(account.computerDraws||0);shareContent(`${name} on MateVerse`,`My MateVerse rating is ${account.rating} (${wins} wins, ${losses} losses, ${draws} draws). Follow my games and challenge me!`,`${location.origin}/?player=${encodeURIComponent(account.username)}`);}
 async function loadGoogleSignIn(){
- try{const {googleClientId}=await api("/api/config");if(!googleClientId){$("google-signin").hidden=true;return;}
-  const script=document.createElement("script");script.src="https://accounts.google.com/gsi/client";script.async=true;script.defer=true;
-  script.onload=()=>{window.google.accounts.id.initialize({client_id:googleClientId,callback:async response=>{try{const result=await api("/api/auth/google",{credential:response.credential});activateAccount(result.user);toast("Signed in with Google.");}catch(error){showProfileError(error.message);}}});window.google.accounts.id.renderButton($("google-signin"),{theme:"outline",size:"large",text:"continue_with",shape:"rectangular",width:280});};
-  script.onerror=()=>showProfileError("Google sign-in could not load. Check your connection.");document.head.append(script);
- }catch(error){showProfileError(error.message);}
+ const container=$("google-signin");
+ container.hidden=false;
+ try{
+  const {googleClientId}=await api("/api/config");
+  if(!googleClientId){container.textContent="Google sign-in is not configured yet. Please use email sign-in.";showProfileError("The site owner needs to set GOOGLE_CLIENT_ID before Google sign-in is available.");return;}
+  const initialize=()=>{
+   if(!window.google?.accounts?.id)throw new Error("Google sign-in could not initialize. Check the browser console and try again.");
+   window.google.accounts.id.initialize({client_id:googleClientId,callback:async response=>{
+    if(!response?.credential){showProfileError("Google did not return a sign-in credential. Please try again.");return;}
+    try{const result=await api("/api/auth/google",{credential:response.credential});activateAccount(result.user);toast("Signed in with Google.");}
+    catch(error){showProfileError(error.message);}
+   }});
+   window.google.accounts.id.renderButton(container,{theme:"outline",size:"large",text:"continue_with",shape:"rectangular",width:280});
+  };
+  if(window.google?.accounts?.id){initialize();return;}
+  const existingScript=document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
+  const script=existingScript||document.createElement("script");
+  if(!existingScript){script.src="https://accounts.google.com/gsi/client";script.async=true;script.defer=true;}
+  script.addEventListener("load",()=>{try{initialize();}catch(error){showProfileError(error.message);container.textContent="Google sign-in could not initialize.";}},{once:true});
+  script.addEventListener("error",()=>{showProfileError("Google sign-in could not load. Check your connection or browser privacy settings.");container.textContent="Google sign-in could not load.";},{once:true});
+  if(!existingScript)document.head.append(script);
+ }catch(error){showProfileError(error.message);container.textContent="Google sign-in is temporarily unavailable.";}
 }
 async function verifyEmailFromLink(){
  const token=new URLSearchParams(location.search).get("verify");if(!token)return;
@@ -691,6 +710,6 @@ $("time-control").addEventListener("change",()=>{if(mode==="online")toast("Clock
 $("offer-draw").addEventListener("click",()=>{if(mode!=="online"||!roomCode)return toast("Draw offers are available in online matches.");socket.emit("offerDraw",{code:roomCode});toast("Draw offer sent.");});
 $("resign").addEventListener("click",()=>{if(mode!=="online"||!roomCode)return toast("Resignation is available in online matches.");if(confirm("Resign this game?"))socket.emit("resign",{code:roomCode});});
 $("chat-form").addEventListener("submit",e=>{e.preventDefault();const message=$("chat-input").value.trim();if(!message)return;if(mode!=="online"||!roomCode||!onlineReady)return toast("Join an online room before sending a message.");if(!socket.connected)return toast("Chat is unavailable while disconnected.");socket.emit("chatMessage",{code:roomCode,message},reply=>{if(!reply?.ok)return toast(reply?.error||"Message could not be sent.");$("chat-input").value="";});});
-$("footer-year").textContent=new Date().getFullYear();$("profile-name").textContent=name;
+$("footer-year").textContent=new Date().getFullYear();
 applySettings();updateStats();socket.emit("setProfile",{name,username:account?.username});if(!restoreActiveGame())resetClocks();loadAccount();loadLeaderboard();loadReviews();loadGoogleSignIn();verifyEmailFromLink();render();
 const sharedPlayer=new URLSearchParams(location.search).get("player");if(sharedPlayer){showView("community",true);showPublicProfile(sharedPlayer);}
