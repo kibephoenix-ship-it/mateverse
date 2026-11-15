@@ -1,21 +1,25 @@
 import { Chess } from "/vendor/chess.js";
 
 const adsScriptUrl = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1947287610112705";
-const adsSlotId = "mateverse-ads-slot";
+const adsContainerId = "mateverse-ad-container";
+const adsSlotId = "7072069487";
 window.adsbygoogle = window.adsbygoogle || [];
+let adsInitialized = false;
 
 function ensureAdSenseSlot(){
-  if (document.getElementById(adsSlotId)) return;
+  if (document.getElementById(adsContainerId)) return;
   const slot = document.createElement("div");
-  slot.id = adsSlotId;
+  slot.id = adsContainerId;
   slot.className = "adsense-slot";
-  slot.innerHTML = '<ins class="adsbygoogle" style="display:block;width:300px;height:250px;margin:16px auto;" data-ad-client="ca-pub-1947287610112705" data-ad-slot="mateverse-ads-slot" data-ad-format="auto" data-full-width-responsive="true"></ins>';
+  slot.innerHTML = `<ins class="adsbygoogle" style="display:block;width:300px;height:250px;margin:16px auto;" data-ad-client="ca-pub-1947287610112705" data-ad-slot="${adsSlotId}" data-ad-format="auto" data-full-width-responsive="true"></ins>`;
   const target = document.querySelector(".hero") || document.querySelector(".shell") || document.body;
   if (target && target.parentNode) target.parentNode.insertBefore(slot, target.nextSibling || null);
 }
 
 function initializeAds(){
   ensureAdSenseSlot();
+  if (adsInitialized) return;
+  adsInitialized = true;
   try {
     window.adsbygoogle.push({});
   } catch (error) {
