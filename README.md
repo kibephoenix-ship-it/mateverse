@@ -1,5 +1,13 @@
 # MateVerse — Chess Without Borders (Version 3)
 
+This repository contains two independent web apps: the MateVerse chess platform at the repository root and the ScopePulse proposal studio in [`scopepulse-app/`](./scopepulse-app/). Each has its own server, dependencies, environment settings, and deployment configuration.
+
+## Proposal studio
+
+Run the MateVerse chess platform with `npm install` and `npm start` as usual. To run the proposal studio locally, install its dependencies with `npm run studio:install`, configure `scopepulse-app/.env.local` using [`scopepulse-app/.env.example`](./scopepulse-app/.env.example), then start it with `npm run studio:dev`. It runs on port 3001; the chess platform remains on port 3000. The chess navigation includes a **Freelance Studio** link at `/studio`, which redirects to `STUDIO_URL` (defaults to `http://localhost:3001`).
+
+Build the studio with `npm run studio:build` and start its production server with `npm run studio:start`. The studio uses its own Supabase project and Anthropic API key. Deploy it as a separate Render service using [`scopepulse-app/render.yaml`](./scopepulse-app/render.yaml), and deploy the chess app from the root. Set `STUDIO_URL` on the chess service and set the studio's Supabase Auth site and redirect URLs to the studio's public URL. Accounts and data remain separate between the two apps.
+
 MateVerse is a responsive chess web app with a futuristic gaming interface. This version expands the starter with accounts, persistent ratings, online match tools and player history.
 
 ## Features
