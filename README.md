@@ -62,7 +62,8 @@ Email verification and Google sign-in are configurable and must be set up before
 - Configure SMTP with `SMTP_HOST`, `SMTP_PORT` (usually `587`), `SMTP_SECURE` (`true` only for implicit TLS, commonly port `465`), `SMTP_USER`, `SMTP_PASS`, and `SMTP_FROM`.
 - Set `PUBLIC_URL` to the canonical HTTPS site URL so verification links point to the deployed app.
 - For Google, create a Google Identity Services OAuth **Web application** client and set `GOOGLE_CLIENT_ID`. Add the production site origin (and local development origin when needed) to its authorized JavaScript origins. Never commit OAuth or SMTP secrets.
-- Add these values in Render's environment settings, not in source files. Email/password registration will stay unavailable until SMTP is configured; Google sign-in stays hidden until its client ID is configured.
+- Copy [`.env.example`](./.env.example) to `.env` for local setup. Set the same `GOOGLE_CLIENT_ID` in your hosting provider's environment settings; the client ID is public configuration, while any OAuth client secret must stay server-side and is not needed for this GIS ID-token flow.
+- Add these values in Render's environment settings, not in source files. Email/password registration will stay unavailable until SMTP is configured; the Google sign-in panel explains when its client ID is not configured.
 - Players can add Instagram/Facebook profile URLs and share a MateVerse profile/rating using their device's share sheet or copy link. MateVerse does not post automatically or ask for social-media passwords.
 - Reviews are public. Guests may post; review text is limited and rate-limited, but public submissions still need moderation before a large-scale launch.
 - Help: [MateVersechess2026@mateverse-9jqw.onrender.com](mailto:MateVersechess2026@mateverse-9jqw.onrender.com) · [+254 103 705 543](tel:+254103705543).

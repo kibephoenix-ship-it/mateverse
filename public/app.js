@@ -596,11 +596,28 @@ async function shareContent(title,text,url){
 }
 function shareCurrentProfile(){if(!account){openProfile();return;}const wins=(account.wins||0)+(account.computerWins||0),losses=(account.losses||0)+(account.computerLosses||0),draws=(account.draws||0)+(account.computerDraws||0);shareContent(`${name} on MateVerse`,`My MateVerse rating is ${account.rating} (${wins} wins, ${losses} losses, ${draws} draws). Follow my games and challenge me!`,`${location.origin}/?player=${encodeURIComponent(account.username)}`);}
 async function loadGoogleSignIn(){
- try{const {googleClientId}=await api("/api/config");if(!googleClientId){$("google-signin").hidden=true;return;}
-  const script=document.createElement("script");script.src="https://accounts.google.com/gsi/client";script.async=true;script.defer=true;
-  script.onload=()=>{window.google.accounts.id.initialize({client_id:googleClientId,callback:async response=>{try{const result=await api("/api/auth/google",{credential:response.credential});activateAccount(result.user);toast("Signed in with Google.");}catch(error){showProfileError(error.message);}}});window.google.accounts.id.renderButton($("google-signin"),{theme:"outline",size:"large",text:"continue_with",shape:"rectangular",width:280});};
-  script.onerror=()=>showProfileError("Google sign-in could not load. Check your connection.");document.head.append(script);
- }catch(error){showProfileError(error.message);}
+ const container=$("google-signin");
+ container.hidden=false;
+ try{
+  const {googleClientId}=await api("/api/config");
+  if(!googleClientId){container.textContent="Google sign-in is not configured yet. Please use email sign-in.";showProfileError("The site owner needs to set GOOGLE_CLIENT_ID before Google sign-in is available.");return;}
+  const initialize=()=>{
+   if(!window.google?.accounts?.id)throw new Error("Google sign-in could not initialize. Check the browser console and try again.");
+   window.google.accounts.id.initialize({client_id:googleClientId,callback:async response=>{
+    if(!response?.credential){showProfileError("Google did not return a sign-in credential. Please try again.");return;}
+    try{const result=await api("/api/auth/google",{credential:response.credential});activateAccount(result.user);toast("Signed in with Google.");}
+    catch(error){showProfileError(error.message);}
+   }});
+   window.google.accounts.id.renderButton(container,{theme:"outline",size:"large",text:"continue_with",shape:"rectangular",width:280});
+  };
+  if(window.google?.accounts?.id){initialize();return;}
+  const existingScript=document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
+  const script=existingScript||document.createElement("script");
+  if(!existingScript){script.src="https://accounts.google.com/gsi/client";script.async=true;script.defer=true;}
+  script.addEventListener("load",()=>{try{initialize();}catch(error){showProfileError(error.message);container.textContent="Google sign-in could not initialize.";}},{once:true});
+  script.addEventListener("error",()=>{showProfileError("Google sign-in could not load. Check your connection or browser privacy settings.");container.textContent="Google sign-in could not load.";},{once:true});
+  if(!existingScript)document.head.append(script);
+ }catch(error){showProfileError(error.message);container.textContent="Google sign-in is temporarily unavailable.";}
 }
 async function verifyEmailFromLink(){
  const token=new URLSearchParams(location.search).get("verify");if(!token)return;
