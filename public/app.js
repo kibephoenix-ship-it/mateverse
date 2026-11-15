@@ -108,11 +108,20 @@ function showWinner(result,reason=""){
 function updateProfileStats(user){
  if(!user)return;
  account=user;
+ renderProfileChip(user);
  $("account-wins").textContent=(user.wins||0)+(user.computerWins||0);
  $("account-losses").textContent=(user.losses||0)+(user.computerLosses||0);
  $("account-draws").textContent=(user.draws||0)+(user.computerDraws||0);
  $("profile-name").textContent=`${user.displayName} · ${user.rating}`;
  $("account-summary").textContent=`Signed in as ${user.displayName} (@${user.username}) · ${user.rating} rating · ${(user.games||0)+(user.computerGames||0)} games.`;
+}
+function renderProfileChip(user=account){
+ const button=$("profile-open"),image=$("profile-chip-avatar"),fallback=$("profile-chip-fallback");
+ const avatarUrl=user?.avatarUrl;
+ image.hidden=!avatarUrl;
+ fallback.hidden=!!avatarUrl;
+ if(avatarUrl)image.src=avatarUrl;else image.removeAttribute("src");
+ button.setAttribute("aria-label",user?`Open profile for ${user.displayName}, rating ${user.rating}`:"Open player account");
 }
 function saveResult(){
  if(!game.isGameOver()||gameResultSaved)return;
@@ -509,7 +518,7 @@ async function resendVerification(){
  catch(error){showProfileError(error.message);}
 }
 async function logout(){
- try{await api("/api/logout",{});account=null;$("profile-name").textContent=name+" · Sign in";$("account-form").hidden=false;$("account-signed-in").hidden=true;syncSocketIdentity();openProfile();loadLeaderboard();loadCommunity();toast("Signed out.");}
+ try{await api("/api/logout",{});account=null;renderProfileChip(null);$("profile-name").textContent=name+" · Sign in";$("account-form").hidden=false;$("account-signed-in").hidden=true;syncSocketIdentity();openProfile();loadLeaderboard();loadCommunity();toast("Signed out.");}
  catch(error){toast(error.message);}
 }
 async function loadAccount(){
@@ -578,7 +587,7 @@ async function uploadAvatar(){
  try{
   const response=await fetch("/api/profile/avatar",{method:"POST",headers:{"Content-Type":file.type},body:file,credentials:"same-origin"}),data=await response.json();
   if(!response.ok)throw new Error(data.error||"Upload failed.");
-  account.avatarUrl=data.avatarUrl;$("avatar-preview").src=data.avatarUrl;$("avatar-preview").hidden=false;$("profile-message").textContent="Profile picture updated.";
+  account.avatarUrl=data.avatarUrl;$("avatar-preview").src=data.avatarUrl;$("avatar-preview").hidden=false;renderProfileChip(account);$("profile-message").textContent="Profile picture updated.";
  }catch(error){$("profile-message").textContent=error.message;}
 }
 async function shareContent(title,text,url){
