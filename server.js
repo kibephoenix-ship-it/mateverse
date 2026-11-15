@@ -36,18 +36,6 @@ const requestLimits = new Map();
 const googleClient = new OAuth2Client();
 function persist() { const tmp = dataFile + ".tmp"; fs.writeFileSync(tmp, JSON.stringify(database, null, 2)); fs.renameSync(tmp, dataFile); }
 app.use(express.json({ limit: "30kb" }));
-app.get("/studio", (_req, res) => {
-  const studioUrl = process.env.STUDIO_URL || "http://localhost:3001";
-  try {
-    const destination = new URL(studioUrl);
-    if (destination.protocol !== "https:" && destination.hostname !== "localhost") {
-      return res.status(503).send("The studio URL must use HTTPS.");
-    }
-    return res.redirect(destination.toString());
-  } catch {
-    return res.status(503).send("The studio URL is not configured correctly.");
-  }
-});
 app.use("/vendor", express.static(path.join(__dirname, "node_modules", "chess.js", "dist", "esm")));
 app.use("/uploads", express.static(avatarDir, { index: false, dotfiles: "deny" }));
 function readCookie(req, key) { const m = (req.headers.cookie || "").match(new RegExp("(?:^|; )" + key + "=([^;]*)")); return m ? decodeURIComponent(m[1]) : ""; }

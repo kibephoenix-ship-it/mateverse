@@ -5,11 +5,7 @@
   "description": "MateVerse futuristic chess platform MVP",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js",
-    "studio:install": "npm --prefix scopepulse-app ci",
-    "studio:dev": "npm --prefix scopepulse-app run dev -- --port 3001",
-    "studio:build": "npm --prefix scopepulse-app run build",
-    "studio:start": "npm --prefix scopepulse-app run start -- --port 3001"
+    "dev": "node server.js"
   },
   "dependencies": {
     "chess.js": "^1.4.0",
